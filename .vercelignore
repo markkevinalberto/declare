@@ -1,13 +1,17 @@
-# This isn't a git repo, so the Vercel CLI doesn't know to skip anything on
-# its own — without this file it tries to upload the whole project
-# directory, including electron/ (its own node_modules bundles the full
-# Electron/Chromium runtime, and electron/dist/ has an 82MB installer built
-# during development). None of that belongs in the web app deployment.
-electron/
+# Leading slashes matter here — these are gitignore-style patterns, so an
+# unanchored "supabase/" would also match src/lib/supabase/ (the actual
+# Supabase client code the whole app imports) and break the build. Anchor
+# every pattern to the repo root so only the intended top-level folder matches.
+
+# The Vercel CLI tries to upload the whole project directory by default,
+# including electron/ (its own node_modules bundles the full Electron/
+# Chromium runtime, and electron/dist/ has an 82MB installer built during
+# development). None of that belongs in the web app deployment.
+/electron/
 
 # Not needed at runtime — migrations are already applied directly to the
-# live Supabase project, not deployed as part of the app.
-supabase/
+# live Supabase project, not deployed as part of the app. NOT src/lib/supabase/.
+/supabase/
 
 # Test-only, not needed for the production build.
-tests/
+/tests/
