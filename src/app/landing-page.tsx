@@ -3,6 +3,7 @@ import Image from "next/image";
 import {
   CalendarDays,
   Download,
+  Monitor,
   MonitorPlay,
   Users,
   Users2,
@@ -25,8 +26,6 @@ type Feature = {
   description: string;
   image: string;
   imageAlt: string;
-  downloadHref?: string;
-  downloadLabel?: string;
 };
 
 const FEATURES: Feature[] = [
@@ -56,8 +55,6 @@ const FEATURES: Feature[] = [
       "Drive lyrics, scripture, and announcements to a projector and a separate stage monitor for your team, with countdown timers, a scrolling announcement bar, and full keyboard shortcut control — all from a single console.",
     image: "/marketing/presenter.png",
     imageAlt: "Presenter console with a schedule of songs and slides, live confidence monitor, and playback controls",
-    downloadHref: DESKTOP_DOWNLOAD_URL,
-    downloadLabel: "Download for Windows",
   },
   {
     icon: Users2,
@@ -110,6 +107,15 @@ export function LandingPage() {
             <span className="text-lg font-semibold tracking-tight">Declare</span>
           </div>
           <nav className="flex items-center gap-2">
+            <a
+              href="#desktop-app"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "hidden sm:inline-flex"
+              )}
+            >
+              <Monitor /> Desktop app
+            </a>
             <Link
               href="/login"
               className={buttonVariants({ variant: "ghost", size: "sm" })}
@@ -181,21 +187,45 @@ export function LandingPage() {
                     <p className="mt-3 text-muted-foreground text-balance">
                       {feature.description}
                     </p>
-                    {feature.downloadHref ? (
-                      <a
-                        href={feature.downloadHref}
-                        className={cn(
-                          buttonVariants({ variant: "outline", size: "sm" }),
-                          "mt-5"
-                        )}
-                      >
-                        <Download /> {feature.downloadLabel}
-                      </a>
-                    ) : null}
                   </div>
                 </div>
               );
             })}
+          </div>
+        </section>
+
+        <section
+          id="desktop-app"
+          className="scroll-mt-16 border-t bg-[#08121F] text-white"
+        >
+          <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/40">
+              <Monitor className="size-7 text-primary-foreground" />
+            </div>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white/90">
+              Desktop app
+            </div>
+            <h2 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+              Run the presenter console as a native Windows app
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-white/70 text-balance">
+              Install Declare on the machine that runs your projector for real
+              fullscreen on any monitor, reliable multi-display output for
+              your projector and stage screen, and none of the popup-blocker
+              or permission hassles that come with running it in a browser
+              tab.
+            </p>
+            <div className="mt-8">
+              <a
+                href={DESKTOP_DOWNLOAD_URL}
+                className={buttonVariants({ size: "lg" })}
+              >
+                <Download /> Download for Windows
+              </a>
+            </div>
+            <p className="mt-4 text-xs text-white/50">
+              Free · Windows 10/11 · v0.1.0
+            </p>
           </div>
         </section>
 
