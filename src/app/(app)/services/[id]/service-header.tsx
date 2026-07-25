@@ -1,0 +1,79 @@
+"use client";
+
+import { useState } from "react";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { Link2, MapPin, MonitorPlay, Pencil, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { EditServiceDialog } from "./edit-service-dialog";
+
+type Service = {
+  id: string;
+  title: string;
+  starts_at: string;
+  campus: string | null;
+  notes: string | null;
+  share_token: string;
+};
+
+export function ServiceHeader({
+  service,
+  isScheduler,
+}: {
+  service: Service;
+  isScheduler: boolean;
+}) {
+  const [editOpen, setEditOpen] = useState(false);
+
+  function copyShareLink() {
+    const url = `${window.location.origin}/plan/${service.share_token}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Share link copied");
+  }
+
+  return (
+    <Card className="print:border-none print:shadow-none">
+      <CardContent className="flex flex-wrap items-start justify-between gap-3 py-4">
+        <div className="grid gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{service.title}</h1>
+          <p className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <span>{format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a")}</span>
+            {service.campus ? (
+              <span className="flex items-center gap-1">
+                <MapPin className="size-3.5" /> {service.campus}
+              </span>
+            ) : null}
+          </p>
+          {service.notes ? (
+            <p className="text-sm text-muted-foreground">{service.notes}</p>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-1 print:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={<a href={`/present/${service.id}`} target="_blank" rel="noreferrer" />}
+          >
+            <MonitorPlay /> Present
+          </Button>
+          <Button variant="outline" size="sm" onClick={copyShareLink}>
+            <Link2 /> Share link
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer /> Print
+          </Button>
+          {isScheduler ? (
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+              <Pencil /> Edit
+            </Button>
+          ) : null}
+        </div>
+      </CardContent>
+      {isScheduler ? (
+        <EditServiceDialog service={service} open={editOpen} onOpenChange={setEditOpen} />
+      ) : null}
+    </Card>
+  );
+}

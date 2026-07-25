@@ -1,0 +1,13 @@
+# This isn't a git repo, so the Vercel CLI doesn't know to skip anything on
+# its own — without this file it tries to upload the whole project
+# directory, including electron/ (its own node_modules bundles the full
+# Electron/Chromium runtime, and electron/dist/ has an 82MB installer built
+# during development). None of that belongs in the web app deployment.
+electron/
+
+# Not needed at runtime — migrations are already applied directly to the
+# live Supabase project, not deployed as part of the app.
+supabase/
+
+# Test-only, not needed for the production build.
+tests/

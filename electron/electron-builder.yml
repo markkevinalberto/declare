@@ -1,0 +1,20 @@
+appId: com.declare.app
+productName: Declare
+directories:
+  output: dist
+  buildResources: build
+files:
+  - src/**/*
+  - package.json
+win:
+  target: nsis
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  artifactName: "Declare-Setup-${version}.exe"
