@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   CalendarDays,
+  Download,
   MonitorPlay,
   Users,
   Users2,
@@ -10,6 +11,13 @@ import { DeclareMark } from "@/components/brand/declare-mark";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// Windows installer — hosted as a GitHub release rather than bundled into
+// the Vercel deployment (it's ~80MB, and the app icon/screenshots already
+// live here; no reason to bloat the site build with a desktop binary).
+// Bump the tag/filename together when a new build is released.
+const DESKTOP_DOWNLOAD_URL =
+  "https://github.com/markkevinalberto/declare/releases/download/v0.1.0/Declare-Setup-0.1.0.exe";
+
 type Feature = {
   icon: typeof CalendarDays;
   eyebrow: string;
@@ -17,6 +25,8 @@ type Feature = {
   description: string;
   image: string;
   imageAlt: string;
+  downloadHref?: string;
+  downloadLabel?: string;
 };
 
 const FEATURES: Feature[] = [
@@ -46,6 +56,8 @@ const FEATURES: Feature[] = [
       "Drive lyrics, scripture, and announcements to a projector and a separate stage monitor for your team, with countdown timers, a scrolling announcement bar, and full keyboard shortcut control — all from a single console.",
     image: "/marketing/presenter.png",
     imageAlt: "Presenter console with a schedule of songs and slides, live confidence monitor, and playback controls",
+    downloadHref: DESKTOP_DOWNLOAD_URL,
+    downloadLabel: "Download for Windows",
   },
   {
     icon: Users2,
@@ -169,6 +181,17 @@ export function LandingPage() {
                     <p className="mt-3 text-muted-foreground text-balance">
                       {feature.description}
                     </p>
+                    {feature.downloadHref ? (
+                      <a
+                        href={feature.downloadHref}
+                        className={cn(
+                          buttonVariants({ variant: "outline", size: "sm" }),
+                          "mt-5"
+                        )}
+                      >
+                        <Download /> {feature.downloadLabel}
+                      </a>
+                    ) : null}
                   </div>
                 </div>
               );
