@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
@@ -110,4 +111,16 @@ export async function revokeInvite(inviteId: string) {
     .eq("id", inviteId)
     .eq("org_id", profile.org_id);
   revalidatePath("/settings");
+}
+
+export async function deleteOrganization(
+  confirmName: string
+): Promise<SettingsActionState> {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_organization", {
+    p_confirm_name: confirmName,
+  });
+  if (error) return { error: error.message };
+  redirect("/onboarding");
 }

@@ -6,11 +6,31 @@ export default async function MySchedulePage() {
   const profile = await requireOrgProfile();
   const supabase = await createClient();
 
-  const { data: positions } = await supabase
-    .from("positions")
-    .select("id, status, services(id, title, starts_at, campus), roles(name)")
-    .eq("user_id", profile.id)
-    .neq("status", "draft");
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [{ data: positions }, { data: teamBlockoutRows }] = await Promise.all([
+    supabase
+      .from("positions")
+      .select("id, status, services(id, title, starts_at, campus), roles(name)")
+      .eq("user_id", profile.id)
+      .neq("status", "draft"),
+    supabase
+      .from("blockout_dates")
+      .select("id, start_date, end_date, reason, profiles(name, email)")
+      .eq("org_id", profile.org_id)
+      .gte("end_date", today),
+  ]);
+
+  const teamBlockouts = (teamBlockoutRows ?? []).map((b) => {
+    const person = b.profiles as unknown as { name: string; email: string } | null;
+    return {
+      id: b.id,
+      startDate: b.start_date,
+      endDate: b.end_date,
+      reason: b.reason,
+      userName: person?.name || person?.email || "Someone",
+    };
+  });
 
   const rows = (positions ?? [])
     .map((p) => ({
@@ -37,7 +57,7 @@ export default async function MySchedulePage() {
           Your upcoming appointments — accept or decline below.
         </p>
       </div>
-      <MyScheduleView rows={rows} />
+      <MyScheduleView rows={rows} teamBlockouts={teamBlockouts} />
     </div>
   );
 }

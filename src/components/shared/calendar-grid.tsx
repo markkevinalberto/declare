@@ -24,11 +24,13 @@ export function CalendarGrid<T>({
   getDate,
   selectedDay,
   onSelectDay,
+  blockoutsByDay,
 }: {
   items: T[];
   getDate: (item: T) => string;
   selectedDay: Date | null;
   onSelectDay: (d: Date | null) => void;
+  blockoutsByDay?: Map<string, unknown[]>;
 }) {
   const [month, setMonth] = useState(startOfMonth(new Date()));
 
@@ -72,30 +74,42 @@ export function CalendarGrid<T>({
           {days.map((day) => {
             const key = format(day, "yyyy-MM-dd");
             const dayItems = itemsByDay.get(key) ?? [];
+            const dayBlockouts = blockoutsByDay?.get(key) ?? [];
+            const hasAny = dayItems.length > 0 || dayBlockouts.length > 0;
             const selected = selectedDay && isSameDay(day, selectedDay);
             return (
               <button
                 key={key}
                 type="button"
-                onClick={() =>
-                  dayItems.length > 0 ? onSelectDay(selected ? null : day) : undefined
-                }
+                onClick={() => (hasAny ? onSelectDay(selected ? null : day) : undefined)}
                 className={cn(
                   "flex h-16 flex-col items-center gap-1 rounded-lg border border-transparent p-1 text-sm",
                   !isSameMonth(day, month) && "text-muted-foreground/40",
                   isToday(day) && "border-border",
                   selected && "bg-primary text-primary-foreground",
-                  dayItems.length > 0 && !selected && "bg-muted/60 font-medium"
+                  hasAny && !selected && "bg-muted/60 font-medium"
                 )}
               >
                 {format(day, "d")}
-                {dayItems.length > 0 ? (
-                  <span
-                    className={cn(
-                      "size-1.5 rounded-full",
-                      selected ? "bg-primary-foreground" : "bg-primary"
-                    )}
-                  />
+                {dayItems.length > 0 || dayBlockouts.length > 0 ? (
+                  <span className="flex items-center gap-0.5">
+                    {dayItems.length > 0 ? (
+                      <span
+                        className={cn(
+                          "size-1.5 rounded-full",
+                          selected ? "bg-primary-foreground" : "bg-primary"
+                        )}
+                      />
+                    ) : null}
+                    {dayBlockouts.length > 0 ? (
+                      <span
+                        className={cn(
+                          "size-1.5 rounded-full",
+                          selected ? "bg-primary-foreground" : "bg-chart-3"
+                        )}
+                      />
+                    ) : null}
+                  </span>
                 ) : null}
               </button>
             );

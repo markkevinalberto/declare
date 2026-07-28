@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Settings, User as UserIcon } from "lucide-react";
+import { LogOut, Settings, ShieldCheck, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -28,10 +28,12 @@ export function UserMenu({
   name,
   email,
   avatarUrl,
+  isSuperAdmin,
 }: {
   name: string;
   email: string;
   avatarUrl: string | null;
+  isSuperAdmin?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -57,6 +59,11 @@ export function UserMenu({
         <DropdownMenuItem render={<Link href="/settings" />}>
           <Settings /> Settings
         </DropdownMenuItem>
+        {isSuperAdmin ? (
+          <DropdownMenuItem render={<Link href="/admin" />}>
+            <ShieldCheck /> Super admin
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive">
           <form action={logout} className="w-full">

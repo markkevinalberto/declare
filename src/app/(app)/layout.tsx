@@ -30,6 +30,7 @@ export default async function AppLayout({
       orgName={org?.name ?? "Declare"}
       isScheduler={isScheduler}
       isAdmin={profile.role === "admin"}
+      isSuperAdmin={profile.is_super_admin}
       unreadCount={unreadCount ?? 0}
       userName={profile.name || profile.email}
       userEmail={profile.email}

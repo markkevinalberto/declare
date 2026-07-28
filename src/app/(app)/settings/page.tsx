@@ -11,6 +11,7 @@ import { OrgForm } from "./org-form";
 import { InviteForm } from "./invite-form";
 import { InvitesList } from "./invites-list";
 import { JoinLinkCard } from "./join-link-card";
+import { DeleteOrgDialog } from "./delete-org-dialog";
 
 export default async function SettingsPage() {
   const profile = await requireAdmin();
@@ -75,6 +76,19 @@ export default async function SettingsPage() {
         <CardContent className="grid gap-6">
           <InviteForm />
           <InvitesList invites={invites ?? []} />
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/40">
+        <CardHeader>
+          <CardTitle>Danger zone</CardTitle>
+          <CardDescription>
+            Permanently delete {org?.name ?? "this organization"} and
+            everything in it.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteOrgDialog orgName={org?.name ?? ""} />
         </CardContent>
       </Card>
     </div>

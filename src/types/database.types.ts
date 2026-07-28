@@ -57,6 +57,7 @@ export interface Database {
           avatar_url: string | null;
           role: ProfileRole;
           active: boolean;
+          is_super_admin: boolean;
           created_at: string;
         };
         Insert: {
@@ -68,6 +69,7 @@ export interface Database {
           avatar_url?: string | null;
           role?: ProfileRole;
           active?: boolean;
+          is_super_admin?: boolean;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
@@ -690,6 +692,7 @@ export interface Database {
           campus: string | null;
           notes: string | null;
           org_name: string;
+          timezone: string;
         }[];
       };
       get_shared_service_plan_items: {
@@ -739,6 +742,18 @@ export interface Database {
       regenerate_join_token: {
         Args: Record<string, never>;
         Returns: string;
+      };
+      leave_organization: {
+        Args: Record<string, never>;
+        Returns: void;
+      };
+      delete_organization: {
+        Args: { p_confirm_name: string };
+        Returns: void;
+      };
+      current_profile_is_super_admin: {
+        Args: Record<string, never>;
+        Returns: boolean;
       };
     };
     Enums: Record<string, never>;

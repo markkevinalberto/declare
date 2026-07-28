@@ -48,3 +48,9 @@ export async function requireAdmin(): Promise<OrgProfile> {
   if (profile.role !== "admin") redirect("/dashboard");
   return profile;
 }
+
+export async function requireSuperAdmin(): Promise<Profile> {
+  const profile = await requireProfile();
+  if (!profile.is_super_admin) redirect("/dashboard");
+  return profile;
+}

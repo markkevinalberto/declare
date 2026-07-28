@@ -27,6 +27,7 @@ export function AppShell({
   orgName,
   isScheduler,
   isAdmin,
+  isSuperAdmin,
   unreadCount,
   userName,
   userEmail,
@@ -36,6 +37,7 @@ export function AppShell({
   orgName: string;
   isScheduler: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   unreadCount: number;
   userName: string;
   userEmail: string;
@@ -92,7 +94,12 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell unreadCount={unreadCount} />
-            <UserMenu name={userName} email={userEmail} avatarUrl={avatarUrl} />
+            <UserMenu
+              name={userName}
+              email={userEmail}
+              avatarUrl={avatarUrl}
+              isSuperAdmin={isSuperAdmin}
+            />
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 print:overflow-visible print:p-0">

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
@@ -34,4 +35,12 @@ export async function updateOwnProfile(
 
   revalidatePath("/settings/profile");
   return { success: "Profile updated." };
+}
+
+export async function leaveOrganization(): Promise<ProfileActionState> {
+  await requireOrgProfile();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("leave_organization");
+  if (error) return { error: error.message };
+  redirect("/onboarding");
 }

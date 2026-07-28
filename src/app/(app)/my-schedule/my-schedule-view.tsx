@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { format, isSameDay } from "date-fns";
-import { CalendarDays, List, MapPin } from "lucide-react";
+import { addDays, format, isSameDay } from "date-fns";
+import { CalendarDays, CalendarOff, List, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,7 +22,21 @@ type Row = {
   role: { name: string } | null;
 };
 
-export function MyScheduleView({ rows }: { rows: Row[] }) {
+type TeamBlockout = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  reason: string | null;
+  userName: string;
+};
+
+export function MyScheduleView({
+  rows,
+  teamBlockouts = [],
+}: {
+  rows: Row[];
+  teamBlockouts?: TeamBlockout[];
+}) {
   const [view, setView] = useState<"list" | "calendar">("list");
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
@@ -33,6 +47,26 @@ export function MyScheduleView({ rows }: { rows: Row[] }) {
   const dayFiltered = selectedDay
     ? upcoming.filter((r) => isSameDay(new Date(r.service.starts_at), selectedDay))
     : null;
+
+  const blockoutsByDay = useMemo(() => {
+    const map = new Map<string, TeamBlockout[]>();
+    for (const b of teamBlockouts) {
+      let cursor = new Date(`${b.startDate}T00:00:00`);
+      const end = new Date(`${b.endDate}T00:00:00`);
+      while (cursor <= end) {
+        const key = format(cursor, "yyyy-MM-dd");
+        const list = map.get(key) ?? [];
+        list.push(b);
+        map.set(key, list);
+        cursor = addDays(cursor, 1);
+      }
+    }
+    return map;
+  }, [teamBlockouts]);
+
+  const selectedDayBlockouts = selectedDay
+    ? (blockoutsByDay.get(format(selectedDay, "yyyy-MM-dd")) ?? [])
+    : [];
 
   return (
     <div className="grid gap-4">
@@ -59,7 +93,20 @@ export function MyScheduleView({ rows }: { rows: Row[] }) {
           getDate={(r) => r.service.starts_at}
           selectedDay={selectedDay}
           onSelectDay={setSelectedDay}
+          blockoutsByDay={blockoutsByDay}
         />
+      ) : null}
+
+      {selectedDay && selectedDayBlockouts.length > 0 ? (
+        <div className="flex items-start gap-2 rounded-lg border border-dashed border-chart-3/50 bg-chart-3/5 p-3 text-sm">
+          <CalendarOff className="mt-0.5 size-4 shrink-0 text-chart-3" />
+          <p>
+            Unavailable that day:{" "}
+            {selectedDayBlockouts
+              .map((b) => `${b.userName}${b.reason ? ` (${b.reason})` : ""}`)
+              .join(", ")}
+          </p>
+        </div>
       ) : null}
 
       {dayFiltered ? (
