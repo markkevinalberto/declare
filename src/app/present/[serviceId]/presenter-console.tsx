@@ -41,6 +41,7 @@ import {
   Pencil,
   Play,
   Plus,
+  Radio,
   RotateCcw,
   Search,
   SeparatorHorizontal,
@@ -109,6 +110,7 @@ import {
   saveBibleVerseOverride,
   saveContentText,
   saveMediaConfig,
+  savePlanItemTitle,
   saveProjectionSettings,
   saveSongProjectionFormat,
   type BiblePassage,
@@ -123,6 +125,7 @@ import {
 import { eventMatchesCombo, normalizeMatchText, useHotkeySettings } from "./hotkeys";
 import { HotkeySettingsPopover } from "./hotkeys-settings";
 import { loadPlanItemFiles, savePlanItemFiles } from "./media-store";
+import { PptxImportDialog } from "./pptx-import-dialog";
 import { SlideVisual, type MediaSize } from "./slide-visual";
 
 export type PresentItem =
@@ -139,6 +142,9 @@ export type PresentItem =
   | {
       planItemId: string;
       kind: "content";
+      /** Explicit override title, blank when not renamed — the display
+       * title then falls back to a preview of the content text. */
+      title: string;
       text: string;
       projectionFormat: Record<string, unknown> | null;
     }
@@ -224,6 +230,47 @@ function subscribeMonitorWidth(callback: () => void) {
 function persistMonitorWidth(width: number) {
   localStorage.setItem(MONITOR_WIDTH_KEY, String(width));
   window.dispatchEvent(new Event(MONITOR_WIDTH_EVENT));
+}
+
+// Same pattern as the monitor panel's width, for the schedule board.
+const SCHEDULE_WIDTH_KEY = "presenter-schedule-width";
+const SCHEDULE_WIDTH_EVENT = "presenter-schedule-width-change";
+
+function getScheduleWidthSnapshot() {
+  const saved = Number(localStorage.getItem(SCHEDULE_WIDTH_KEY));
+  return saved >= 200 && saved <= 480 ? saved : 256;
+}
+function getScheduleWidthServerSnapshot() {
+  return 256;
+}
+function subscribeScheduleWidth(callback: () => void) {
+  window.addEventListener(SCHEDULE_WIDTH_EVENT, callback);
+  return () => window.removeEventListener(SCHEDULE_WIDTH_EVENT, callback);
+}
+function persistScheduleWidth(width: number) {
+  localStorage.setItem(SCHEDULE_WIDTH_KEY, String(width));
+  window.dispatchEvent(new Event(SCHEDULE_WIDTH_EVENT));
+}
+
+// Whether this service has ever gone live on this machine — keyed per
+// service so a presenter reload mid-service doesn't blank an already-live
+// projector, but a fresh service starts blank until the first explicit Go
+// Live press. Deliberately NOT part of the BroadcastChannel state (it's a
+// local gate on what postState sends, not something a projector reports).
+const GONE_LIVE_EVENT = "presenter-gone-live-change";
+function goneLiveKey(serviceId: string) {
+  return `presenter-gone-live:${serviceId}`;
+}
+function getGoneLiveServerSnapshot() {
+  return false;
+}
+function subscribeGoneLive(callback: () => void) {
+  window.addEventListener(GONE_LIVE_EVENT, callback);
+  return () => window.removeEventListener(GONE_LIVE_EVENT, callback);
+}
+function markGoneLive(serviceId: string) {
+  localStorage.setItem(goneLiveKey(serviceId), "1");
+  window.dispatchEvent(new Event(GONE_LIVE_EVENT));
 }
 
 const kindLabel = (kind: QueueGroup["kind"]) =>
@@ -318,7 +365,7 @@ function buildQueue(
       const group: QueueGroup = {
         planItemId: item.planItemId,
         kind: "media",
-        title: item.title,
+        title: item.title.trim() || "Media",
         subtitle: local
           ? `${local.length} ${local.length === 1 ? "file" : "files"}`
           : item.files.length > 0
@@ -345,7 +392,7 @@ function buildQueue(
       const group: QueueGroup = {
         planItemId: item.planItemId,
         kind: "content",
-        title: preview || "Content slide",
+        title: item.title.trim() || preview || "Content slide",
         subtitle: parts.length > 1 ? `${parts.length} slides` : null,
         start: flat.length,
         slides,
@@ -893,6 +940,30 @@ export function PresenterConsole({
   }, [items, biblePassages]);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  // The operator navigates `previewIndex` — what's shown in the main slide
+  // panel — independently of `activeIndex`, which is what's actually live
+  // on the projector/stage. They're pushed together by goLive(), or
+  // automatically while navigating within the group that's already live
+  // (see goTo below) so advancing through a live song's lyrics doesn't
+  // require a Go Live press per line.
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const getGoneLiveSnapshot = useCallback(
+    () => localStorage.getItem(goneLiveKey(service.id)) === "1",
+    [service.id]
+  );
+  const hasGoneLive = useSyncExternalStore(
+    subscribeGoneLive,
+    getGoneLiveSnapshot,
+    getGoneLiveServerSnapshot
+  );
+  const scheduleWidth = useSyncExternalStore(
+    subscribeScheduleWidth,
+    getScheduleWidthSnapshot,
+    getScheduleWidthServerSnapshot
+  );
+  const scheduleResizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
   const [blank, setBlank] = useState(false);
   const [clearText, setClearText] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -1056,6 +1127,7 @@ export function PresenterConsole({
     crawlText,
     crawlEnabled,
     crawlTarget,
+    hasGoneLive,
   });
   useEffect(() => {
     stateRef.current = {
@@ -1071,6 +1143,7 @@ export function PresenterConsole({
       crawlText,
       crawlEnabled,
       crawlTarget,
+      hasGoneLive,
     };
   }, [
     activeIndex,
@@ -1085,6 +1158,7 @@ export function PresenterConsole({
     crawlText,
     crawlEnabled,
     crawlTarget,
+    hasGoneLive,
   ]);
 
   const postState = useCallback(() => {
@@ -1101,6 +1175,7 @@ export function PresenterConsole({
       crawlText,
       crawlEnabled,
       crawlTarget,
+      hasGoneLive,
     } = stateRef.current;
     const resolved = resolveActiveSlide({
       activeIndex,
@@ -1111,7 +1186,10 @@ export function PresenterConsole({
     });
     channelRef.current?.postMessage({
       type: "state",
-      blank,
+      // Nothing has been intentionally pushed live yet — keep the output
+      // blank rather than flashing whatever slide 0 happens to be the
+      // moment a projector connects.
+      blank: hasGoneLive ? blank : true,
       clearText,
       volume: desiredVolume,
       countdown:
@@ -1123,12 +1201,13 @@ export function PresenterConsole({
           ? { text: crawlText.trim(), target: crawlTarget }
           : null,
       ...resolved,
+      ...(hasGoneLive ? null : { lines: [], media: null, richHtml: null }),
     });
   }, [groups, flat]);
 
   const livePreview = useMemo(
     () => ({
-      blank,
+      blank: hasGoneLive ? blank : true,
       clearText,
       countdown:
         countdownEndsAt !== null
@@ -1136,6 +1215,7 @@ export function PresenterConsole({
           : null,
       crawl: crawlEnabled && crawlText.trim() ? { text: crawlText.trim() } : null,
       ...resolveActiveSlide({ activeIndex, settings, itemFormats, groups, flat }),
+      ...(hasGoneLive ? null : { lines: [], media: null, richHtml: null }),
     }),
     [
       activeIndex,
@@ -1149,6 +1229,7 @@ export function PresenterConsole({
       countdownLabel,
       crawlText,
       crawlEnabled,
+      hasGoneLive,
     ]
   );
 
@@ -1238,22 +1319,47 @@ export function PresenterConsole({
     });
   }
 
+  // Navigates the PREVIEW only — it takes an explicit goLive() to push that
+  // onto the projector, except when navigating within the group that's
+  // already live, where it stays in lockstep automatically (advancing
+  // through a live song's lyrics shouldn't need a Go Live press per line).
   const goTo = useCallback(
     (index: number) => {
       const clamped = Math.max(0, Math.min(flat.length - 1, index));
-      // A no-op nav (arrow past the last slide, re-clicking the active
-      // tile) mustn't clear this: the slide isn't actually changing, so the
-      // projector never reports fresh media-status — a paused video fires
-      // no events — and the player bar would silently fall back to the
-      // confidence monitor's drifted time/volume until the next real command.
-      if (clamped === activeIndex) return;
-      setActiveIndex(clamped);
-      // The projector will report the new slide's video (if any) afresh —
-      // don't show the previous video's time/duration in the meantime.
-      setRemoteMediaStatus(null);
+      // A no-op nav (arrow past the last slide, re-clicking the previewed
+      // tile) mustn't clear remoteMediaStatus: the slide isn't actually
+      // changing, so the projector never reports fresh media-status — a
+      // paused video fires no events — and the player bar would silently
+      // fall back to the confidence monitor's drifted time/volume until the
+      // next real command.
+      if (clamped === previewIndex) return;
+      setPreviewIndex(clamped);
+
+      const liveGroup = groupForSlideIndex(groups, activeIndex);
+      const targetGroup = groupForSlideIndex(groups, clamped);
+      const stayingWithinLiveGroup =
+        hasGoneLive &&
+        liveGroup &&
+        targetGroup &&
+        liveGroup.planItemId === targetGroup.planItemId;
+
+      if (stayingWithinLiveGroup && clamped !== activeIndex) {
+        setActiveIndex(clamped);
+        // The projector will report the new slide's video (if any) afresh —
+        // don't show the previous video's time/duration in the meantime.
+        setRemoteMediaStatus(null);
+      }
     },
-    [flat.length, activeIndex]
+    [flat.length, previewIndex, activeIndex, groups, hasGoneLive]
   );
+
+  // Pushes the previewed slide onto the projector/stage.
+  const goLive = useCallback(() => {
+    markGoneLive(service.id);
+    if (previewIndex === activeIndex) return;
+    setActiveIndex(previewIndex);
+    setRemoteMediaStatus(null);
+  }, [previewIndex, activeIndex, service.id]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -1265,8 +1371,6 @@ export function PresenterConsole({
       ) {
         return;
       }
-      const { activeIndex } = stateRef.current;
-
       if (
         e.key === "ArrowRight" ||
         e.key === "ArrowDown" ||
@@ -1274,12 +1378,18 @@ export function PresenterConsole({
         e.key === "PageDown"
       ) {
         e.preventDefault();
-        goTo(activeIndex + 1);
+        goTo(previewIndex + 1);
         return;
       }
       if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp") {
         e.preventDefault();
-        goTo(activeIndex - 1);
+        goTo(previewIndex - 1);
+        return;
+      }
+
+      if (eventMatchesCombo(e, hotkeySettings.global.goLive)) {
+        e.preventDefault();
+        goLive();
         return;
       }
 
@@ -1315,10 +1425,10 @@ export function PresenterConsole({
       }
 
       // Jump-to-song-section shortcuts only make sense within whatever
-      // song/verse is currently active — section labels ("Verse 1",
+      // song/verse is currently previewed — section labels ("Verse 1",
       // "Chorus", …) are freeform text from the lyrics, matched
       // case/punctuation-insensitively against each binding's saved text.
-      const group = groupForSlideIndex(groups, activeIndex);
+      const group = groupForSlideIndex(groups, previewIndex);
       if (!group) return;
       for (const section of hotkeySettings.sections) {
         if (!section.combo.key || !eventMatchesCombo(e, section.combo)) {
@@ -1338,7 +1448,7 @@ export function PresenterConsole({
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [goTo, groups, hotkeySettings, service.id, displayPrefs]);
+  }, [goTo, goLive, previewIndex, groups, hotkeySettings, service.id, displayPrefs]);
 
   function startResizingMonitor(e: ReactPointerEvent) {
     e.preventDefault();
@@ -1360,6 +1470,46 @@ export function PresenterConsole({
     }
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+  }
+
+  function startResizingSchedule(e: ReactPointerEvent) {
+    e.preventDefault();
+    scheduleResizeRef.current = { startX: e.clientX, startWidth: scheduleWidth };
+
+    function onMove(moveEvent: PointerEvent) {
+      if (!scheduleResizeRef.current) return;
+      // The schedule board sits on the left, so dragging right (positive
+      // delta) grows it — opposite sign convention from the monitor panel
+      // on the right.
+      const delta = moveEvent.clientX - scheduleResizeRef.current.startX;
+      const next = Math.max(
+        200,
+        Math.min(480, scheduleResizeRef.current.startWidth + delta)
+      );
+      persistScheduleWidth(next);
+    }
+    function onUp() {
+      scheduleResizeRef.current = null;
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
+  function startRename(planItemId: string, currentTitle: string) {
+    setRenamingId(planItemId);
+    setRenameDraft(currentTitle);
+  }
+
+  function commitRename() {
+    const planItemId = renamingId;
+    setRenamingId(null);
+    if (!planItemId) return;
+    savePlanItemTitle(planItemId, renameDraft).then((result) => {
+      if (result?.error) toast.error(result.error);
+      else router.refresh();
+    });
   }
 
   function startCountdown() {
@@ -1513,39 +1663,44 @@ export function PresenterConsole({
     router.refresh();
   }
 
-  const activeGroup = groupForSlideIndex(groups, activeIndex);
-  // Narrowed once here because property narrowing (activeGroup.kind) doesn't
-  // survive into JSX event-handler closures. Media has no text to format.
+  // The main slide panel and "Format text" popover reflect what's being
+  // PREVIEWED — what the operator is looking at and about to send live —
+  // while `liveGroup` (below) tracks what's actually on the projector, for
+  // the separate live/preview indicators on tiles and schedule rows.
+  const previewGroup = groupForSlideIndex(groups, previewIndex);
+  const liveGroup = hasGoneLive ? groupForSlideIndex(groups, activeIndex) : null;
+  // Narrowed once here because property narrowing (previewGroup.kind)
+  // doesn't survive into JSX event-handler closures. Media has no text to format.
   const activeFormatKind =
-    activeGroup && activeGroup.kind !== "media" ? activeGroup.kind : null;
+    previewGroup && previewGroup.kind !== "media" ? previewGroup.kind : null;
   const activeSlideMedia = flat[activeIndex]?.media ?? null;
   const mediaStatus =
     connected && remoteMediaStatus ? remoteMediaStatus : localMediaStatus;
   const displayVolume =
     connected && remoteMediaStatus ? remoteMediaStatus.volume : desiredVolume;
-  const formatKey = activeGroup?.formatKey ?? null;
+  const formatKey = previewGroup?.formatKey ?? null;
   const itemFormat = formatKey ? itemFormats[formatKey] ?? {} : {};
   const effectiveFormat = resolveSongFormat(settings, itemFormat);
   const hasCustomFormat = formatKey
     ? Object.keys(itemFormats[formatKey] ?? {}).length > 0
     : false;
-  // What to show in place of slides while an active group has none yet —
+  // What to show in place of slides while a previewed group has none yet —
   // "Loading…" is only accurate for a bible passage still in flight; a
   // media item with no local files, or one that failed to load, needs its
   // own message (matching the sidebar's own subtitle logic for that row).
   const emptyGroupMessage = (() => {
-    if (!activeGroup) return "Loading verses…";
-    if (activeGroup.kind === "media") {
+    if (!previewGroup) return "Loading verses…";
+    if (previewGroup.kind === "media") {
       const mediaItem = items.find(
         (i): i is Extract<PresentItem, { kind: "media" }> =>
-          i.kind === "media" && i.planItemId === activeGroup.planItemId
+          i.kind === "media" && i.planItemId === previewGroup.planItemId
       );
       return mediaItem && mediaItem.files.length > 0
         ? "These files aren't on this device — click the pencil above to attach them here."
         : "No images or videos yet — click the pencil above to add some.";
     }
-    if (activeGroup.kind === "bible") {
-      return biblePassages[activeGroup.planItemId] === "error"
+    if (previewGroup.kind === "bible") {
+      return biblePassages[previewGroup.planItemId] === "error"
         ? "Couldn't load this passage — check the reference."
         : "Loading verses…";
     }
@@ -1590,7 +1745,27 @@ export function PresenterConsole({
           {connected ? "Projector connected" : "Projector not open"}
         </span>
 
-        {isScheduler && activeGroup && activeFormatKind && formatKey ? (
+        <div className="flex items-center gap-1.5 rounded-md border bg-muted/30 px-2 py-1 text-xs">
+          <span className="font-semibold uppercase tracking-wide text-muted-foreground">
+            Preview
+          </span>
+          <span className="max-w-32 truncate">
+            {previewGroup
+              ? `${previewGroup.title}${flat[previewIndex]?.label ? ` — ${flat[previewIndex]?.label}` : ""}`
+              : "—"}
+          </span>
+        </div>
+        <Button
+          size="sm"
+          variant="destructive"
+          disabled={previewIndex === activeIndex && hasGoneLive}
+          onClick={goLive}
+          title="Push the preview to the live output (Enter)"
+        >
+          <Radio /> Go live
+        </Button>
+
+        {isScheduler && previewGroup && activeFormatKind && formatKey ? (
           <Popover>
             <PopoverTrigger
               render={
@@ -1602,7 +1777,7 @@ export function PresenterConsole({
             <PopoverContent align="end" className="w-80">
               <div className="flex items-center justify-between">
                 <PopoverTitle className="truncate">
-                  “{activeGroup.title}” text
+                  “{previewGroup.title}” text
                 </PopoverTitle>
                 {hasCustomFormat ? (
                   <Button
@@ -1616,7 +1791,7 @@ export function PresenterConsole({
                 ) : null}
               </div>
               <p className="-mt-1 text-[11px] text-muted-foreground">
-                Overrides the projection theme for this {kindLabel(activeGroup.kind)} only.
+                Overrides the projection theme for this {kindLabel(previewGroup.kind)} only.
               </p>
 
               <div className="grid gap-1.5">
@@ -1724,6 +1899,15 @@ export function PresenterConsole({
                 />
               </div>
               <div className="flex items-center justify-between">
+                <Label className="text-xs">All caps</Label>
+                <Switch
+                  checked={effectiveFormat.allCaps}
+                  onCheckedChange={(checked) =>
+                    updateItemFormat(formatKey, activeFormatKind, { allCaps: checked })
+                  }
+                />
+              </div>
+              <div className="flex items-center justify-between">
                 <Label className="text-xs">Text shadow</Label>
                 <Switch
                   checked={effectiveFormat.shadow}
@@ -1789,6 +1973,7 @@ export function PresenterConsole({
                   color: effectiveFormat.textColor,
                   fontWeight: effectiveFormat.bold ? 800 : 600,
                   fontStyle: effectiveFormat.italic ? "italic" : undefined,
+                  textTransform: effectiveFormat.allCaps ? "uppercase" : undefined,
                   textShadow: effectiveFormat.shadow
                     ? "0 2px 10px rgba(0,0,0,0.6)"
                     : undefined,
@@ -1817,7 +2002,7 @@ export function PresenterConsole({
           variant={blank ? "default" : "outline"}
           size="sm"
           onClick={() => setBlank((b) => !b)}
-          title="Blank the projector screen (B)"
+          title="Blank the live output (Ctrl+B)"
         >
           <SquareSlash /> Blank
         </Button>
@@ -1907,9 +2092,10 @@ export function PresenterConsole({
       <div className="flex min-h-0 flex-1">
         <aside
           className={cn(
-            "shrink-0 flex-col border-r md:flex md:w-64",
+            "shrink-0 flex-col border-r md:flex md:w-[var(--schedule-width)]",
             mobileTab === "schedule" ? "flex w-full" : "hidden"
           )}
+          style={{ "--schedule-width": `${scheduleWidth}px` } as CSSProperties}
         >
           <div className="flex gap-1 border-b p-1.5">
             <Button
@@ -1980,7 +2166,13 @@ export function PresenterConsole({
                         );
                       }
                       const { group } = row;
-                      const isActiveGroup = activeGroup?.planItemId === group.planItemId;
+                      const isPreviewedGroup =
+                        previewGroup?.planItemId === group.planItemId;
+                      const isLiveGroup = liveGroup?.planItemId === group.planItemId;
+                      const canRename =
+                        isScheduler &&
+                        (group.kind === "content" || group.kind === "media");
+                      const isRenaming = renamingId === group.planItemId;
                       const loadingBible =
                         group.kind === "bible" &&
                         !group.hasOverride &&
@@ -1996,56 +2188,83 @@ export function PresenterConsole({
                           key={group.planItemId}
                           className={cn(
                             "flex items-center gap-1 rounded-md pr-1 hover:bg-muted",
-                            isActiveGroup && "bg-accent text-accent-foreground"
+                            isPreviewedGroup && "bg-accent text-accent-foreground"
                           )}
                         >
-                          <button
-                            type="button"
-                            disabled={group.slides.length === 0}
-                            onClick={() => {
-                              goTo(group.start);
-                              // On a phone, picking an item is done from
-                              // here — switch straight to its slide tiles
-                              // rather than leaving the operator staring at
-                              // the same list they just tapped.
-                              setMobileTab("slides");
-                            }}
-                            className="flex min-w-0 flex-1 items-center gap-1.5 px-2 py-1.5 text-left text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {group.kind === "bible" ? (
-                              <BookOpenText className="size-3.5 shrink-0 text-muted-foreground" />
-                            ) : group.kind === "content" ? (
-                              <FileText className="size-3.5 shrink-0 text-muted-foreground" />
-                            ) : group.kind === "media" ? (
-                              <ImageIcon className="size-3.5 shrink-0 text-muted-foreground" />
-                            ) : null}
-                            <span className="min-w-0 flex-1">
-                              <span className="flex items-center gap-1.5 truncate font-medium">
-                                {group.title}
-                                {hasFormat ? (
-                                  <Type
-                                    className="size-3 shrink-0 text-primary"
-                                    aria-label="Custom text format"
-                                  />
-                                ) : null}
-                                {group.hasOverride ? (
-                                  <Pencil
-                                    className="size-3 shrink-0 text-primary"
-                                    aria-label="Edited wording"
-                                  />
+                          {isRenaming ? (
+                            <Input
+                              autoFocus
+                              value={renameDraft}
+                              onChange={(e) => setRenameDraft(e.target.value)}
+                              onBlur={commitRename}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  commitRename();
+                                } else if (e.key === "Escape") {
+                                  e.preventDefault();
+                                  setRenamingId(null);
+                                }
+                              }}
+                              className="mx-1 my-1 h-7 min-w-0 flex-1 text-sm"
+                            />
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={group.slides.length === 0}
+                              onClick={() => {
+                                goTo(group.start);
+                                // On a phone, picking an item is done from
+                                // here — switch straight to its slide tiles
+                                // rather than leaving the operator staring at
+                                // the same list they just tapped.
+                                setMobileTab("slides");
+                              }}
+                              onDoubleClick={() => {
+                                if (canRename) startRename(group.planItemId, group.title);
+                              }}
+                              className="flex min-w-0 flex-1 items-center gap-1.5 px-2 py-1.5 text-left text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {group.kind === "bible" ? (
+                                <BookOpenText className="size-3.5 shrink-0 text-muted-foreground" />
+                              ) : group.kind === "content" ? (
+                                <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+                              ) : group.kind === "media" ? (
+                                <ImageIcon className="size-3.5 shrink-0 text-muted-foreground" />
+                              ) : null}
+                              <span className="min-w-0 flex-1">
+                                <span className="flex items-center gap-1.5 truncate font-medium">
+                                  {isLiveGroup ? (
+                                    <span className="flex shrink-0 items-center gap-0.5 rounded bg-destructive px-1 py-px text-[9px] font-bold uppercase tracking-wide text-destructive-foreground">
+                                      Live
+                                    </span>
+                                  ) : null}
+                                  <span className="min-w-0 truncate">{group.title}</span>
+                                  {hasFormat ? (
+                                    <Type
+                                      className="size-3 shrink-0 text-primary"
+                                      aria-label="Custom text format"
+                                    />
+                                  ) : null}
+                                  {group.hasOverride ? (
+                                    <Pencil
+                                      className="size-3 shrink-0 text-primary"
+                                      aria-label="Edited wording"
+                                    />
+                                  ) : null}
+                                </span>
+                                {group.subtitle ? (
+                                  <span className="block truncate text-xs text-muted-foreground">
+                                    {loadingBible
+                                      ? "Loading verses…"
+                                      : errorBible
+                                        ? "Couldn't load this passage"
+                                        : group.subtitle}
+                                  </span>
                                 ) : null}
                               </span>
-                              {group.subtitle ? (
-                                <span className="block truncate text-xs text-muted-foreground">
-                                  {loadingBible
-                                    ? "Loading verses…"
-                                    : errorBible
-                                      ? "Couldn't load this passage"
-                                      : group.subtitle}
-                                </span>
-                              ) : null}
-                            </span>
-                          </button>
+                            </button>
+                          )}
                           {isScheduler && group.kind === "song" && group.song ? (
                             <SongDialog
                               song={group.song}
@@ -2151,6 +2370,10 @@ export function PresenterConsole({
                     )}
                     Media
                   </Button>
+                  <PptxImportDialog
+                    serviceId={service.id}
+                    onImported={() => router.refresh()}
+                  />
                 </div>
               ) : null}
             </>
@@ -2249,6 +2472,12 @@ export function PresenterConsole({
           )}
         </aside>
 
+        <div
+          onPointerDown={startResizingSchedule}
+          className="hidden w-1 shrink-0 cursor-col-resize border-r bg-transparent hover:bg-primary/40 active:bg-primary/60 md:block"
+          title="Drag to resize"
+        />
+
         <main
           className={cn(
             "min-w-0 flex-1 flex-col overflow-y-auto p-3 md:flex",
@@ -2284,26 +2513,32 @@ export function PresenterConsole({
                   : "Ask a leader to add this passage to the service plan to project it."}
               </p>
             </>
-          ) : activeGroup ? (
+          ) : previewGroup ? (
             <div className="grid gap-2">
-              {activeGroup.slides.length === 0 ? (
+              {previewGroup.slides.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">
                   {emptyGroupMessage}
                 </p>
               ) : (
-                activeGroup.slides.map((slide, i) => {
-                  const flatIndex = activeGroup.start + i;
-                  const isActive = flatIndex === activeIndex;
+                previewGroup.slides.map((slide, i) => {
+                  const flatIndex = previewGroup.start + i;
+                  const isPreviewed = flatIndex === previewIndex;
+                  const isLive = hasGoneLive && flatIndex === activeIndex;
                   return (
                     <button
                       key={flatIndex}
                       type="button"
                       onClick={() => goTo(flatIndex)}
                       className={cn(
-                        "flex w-full flex-col rounded-lg border bg-card p-3 text-left transition-colors hover:border-primary/50",
-                        isActive && "border-primary ring-2 ring-primary/40"
+                        "relative flex w-full flex-col rounded-lg border bg-card p-3 text-left transition-colors hover:border-primary/50",
+                        isPreviewed && "border-primary ring-2 ring-primary/40"
                       )}
                     >
+                      {isLive ? (
+                        <span className="absolute right-2 top-2 rounded bg-destructive px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-destructive-foreground">
+                          Live
+                        </span>
+                      ) : null}
                       <span className="pb-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
                         {slide.isTitleCard ? "Title" : slide.label ?? "Lyrics"}
                       </span>
@@ -2360,7 +2595,8 @@ export function PresenterConsole({
           )}
           {view === "schedule" ? (
             <p className="pt-4 text-center text-xs text-muted-foreground">
-              Use ↑ ↓ or Space to move between slides · B to blank the screen
+              Use ↑ ↓ or Space to move the preview · Enter to go live · Ctrl+B
+              to blank the live output
             </p>
           ) : null}
         </main>

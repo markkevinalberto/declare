@@ -8,11 +8,15 @@ export default async function ServicesPage() {
   const supabase = await createClient();
   const isScheduler = profile.role === "admin" || profile.role === "leader";
 
-  const { data: services } = await supabase
-    .from("services")
-    .select("id, title, starts_at, campus, series_id")
-    .eq("org_id", profile.org_id)
-    .order("starts_at", { ascending: true });
+  const [{ data: services }, { data: org }] = await Promise.all([
+    supabase
+      .from("services")
+      .select("id, title, starts_at, campus, series_id")
+      .eq("org_id", profile.org_id)
+      .order("starts_at", { ascending: true }),
+    supabase.from("organizations").select("timezone").eq("id", profile.org_id).single(),
+  ]);
+  const timezone = org?.timezone ?? "UTC";
 
   return (
     <div className="grid gap-4">
@@ -26,7 +30,7 @@ export default async function ServicesPage() {
         {isScheduler ? <NewServiceButton /> : null}
       </div>
 
-      <ServicesView services={services ?? []} isScheduler={isScheduler} />
+      <ServicesView services={services ?? []} isScheduler={isScheduler} timezone={timezone} />
     </div>
   );
 }

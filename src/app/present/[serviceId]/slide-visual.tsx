@@ -369,6 +369,7 @@ function TextBlock({
     color: settings.textColor,
     fontWeight: settings.bold ? 800 : 600,
     fontStyle: settings.italic ? "italic" : undefined,
+    textTransform: settings.allCaps ? "uppercase" : undefined,
     textShadow: settings.shadow ? TEXT_SHADOW : undefined,
     WebkitTextStroke: settings.stroke
       ? `${settings.strokeWidth}em ${settings.strokeColor}`

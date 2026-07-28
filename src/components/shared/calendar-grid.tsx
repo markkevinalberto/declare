@@ -18,6 +18,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { formatInOrgTime } from "@/lib/org-time";
 
 export function CalendarGrid<T>({
   items,
@@ -25,12 +26,14 @@ export function CalendarGrid<T>({
   selectedDay,
   onSelectDay,
   blockoutsByDay,
+  timezone,
 }: {
   items: T[];
   getDate: (item: T) => string;
   selectedDay: Date | null;
   onSelectDay: (d: Date | null) => void;
   blockoutsByDay?: Map<string, unknown[]>;
+  timezone: string;
 }) {
   const [month, setMonth] = useState(startOfMonth(new Date()));
 
@@ -43,13 +46,13 @@ export function CalendarGrid<T>({
   const itemsByDay = useMemo(() => {
     const map = new Map<string, T[]>();
     for (const item of items) {
-      const key = format(new Date(getDate(item)), "yyyy-MM-dd");
+      const key = formatInOrgTime(getDate(item), timezone, "yyyy-MM-dd");
       const list = map.get(key) ?? [];
       list.push(item);
       map.set(key, list);
     }
     return map;
-  }, [items, getDate]);
+  }, [items, getDate, timezone]);
 
   return (
     <Card>

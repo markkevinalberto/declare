@@ -8,10 +8,14 @@ export default async function MessagesPage() {
   const isScheduler = profile.role === "admin" || profile.role === "leader";
   const supabase = await createClient();
 
-  const { data: threads } = await supabase
-    .from("message_threads")
-    .select("id, title, scope_type, created_at")
-    .eq("org_id", profile.org_id);
+  const [{ data: threads }, { data: org }] = await Promise.all([
+    supabase
+      .from("message_threads")
+      .select("id, title, scope_type, created_at")
+      .eq("org_id", profile.org_id),
+    supabase.from("organizations").select("timezone").eq("id", profile.org_id).single(),
+  ]);
+  const timezone = org?.timezone ?? "UTC";
 
   const threadIds = (threads ?? []).map((t) => t.id);
 
@@ -82,7 +86,7 @@ export default async function MessagesPage() {
           </p>
         </div>
         {isScheduler ? (
-          <NewThreadDialog groups={groups} roles={roles} services={services} />
+          <NewThreadDialog groups={groups} roles={roles} services={services} timezone={timezone} />
         ) : null}
       </div>
 

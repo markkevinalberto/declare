@@ -45,11 +45,10 @@ export async function respondToPosition(
 
   const service = position.services as unknown as { title: string; starts_at: string } | null;
   const role = position.roles as unknown as { name: string } | null;
-  const { data: leader } = await supabase
-    .from("profiles")
-    .select("name, email")
-    .eq("id", position.created_by)
-    .single();
+  const [{ data: leader }, { data: org }] = await Promise.all([
+    supabase.from("profiles").select("name, email").eq("id", position.created_by).single(),
+    supabase.from("organizations").select("name").eq("id", profile.org_id).single(),
+  ]);
 
   if (service && role && leader) {
     const { data: emailEnabled } = await supabase.rpc("get_email_preference", {
@@ -57,7 +56,9 @@ export async function respondToPosition(
       p_category: newStatus,
     });
     if (emailEnabled !== false) {
+      const orgName = org?.name ?? "your church";
       const { subject, html } = positionResponseEmail({
+        orgName,
         leaderName: leader.name || leader.email,
         volunteerName: profile.name || profile.email,
         serviceTitle: service.title,
@@ -65,7 +66,7 @@ export async function respondToPosition(
         status: newStatus,
         serviceUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/services/${position.service_id}`,
       });
-      await sendEmail({ to: leader.email, subject, html });
+      await sendEmail({ to: leader.email, subject, html, fromName: orgName });
     }
   }
 

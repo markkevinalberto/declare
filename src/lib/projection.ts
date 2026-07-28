@@ -19,6 +19,8 @@ export type ProjectionSettings = {
   textColor: string;
   bold: boolean;
   italic: boolean;
+  /** Renders slide text in all caps, without changing the stored wording. */
+  allCaps: boolean;
   /** Dark drop shadow behind text for readability over backgrounds. */
   shadow: boolean;
   /** Outline around each letter — helps text pop off busy backgrounds. */
@@ -36,6 +38,7 @@ export const DEFAULT_PROJECTION_SETTINGS: ProjectionSettings = {
   textColor: "#ffffff",
   bold: false,
   italic: false,
+  allCaps: false,
   shadow: true,
   stroke: false,
   strokeColor: "#000000",
@@ -65,6 +68,7 @@ export function normalizeProjectionSettings(
         : DEFAULT_PROJECTION_SETTINGS.textColor,
     bold: Boolean(value.bold),
     italic: Boolean(value.italic),
+    allCaps: Boolean(value.allCaps),
     shadow: value.shadow === undefined ? true : Boolean(value.shadow),
     stroke: Boolean(value.stroke),
     strokeColor:
@@ -113,6 +117,7 @@ export function normalizeSongFormat(raw: unknown): SongProjectionFormat {
   }
   if (typeof value.bold === "boolean") format.bold = value.bold;
   if (typeof value.italic === "boolean") format.italic = value.italic;
+  if (typeof value.allCaps === "boolean") format.allCaps = value.allCaps;
   if (typeof value.shadow === "boolean") format.shadow = value.shadow;
   if (typeof value.stroke === "boolean") format.stroke = value.stroke;
   if (typeof value.strokeColor === "string" && value.strokeColor) {

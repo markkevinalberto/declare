@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { format, isSameDay } from "date-fns";
+import { format } from "date-fns";
 import { CalendarDays, List, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarGrid } from "@/components/shared/calendar-grid";
+import { formatInOrgTime } from "@/lib/org-time";
 import { ServiceRowActions } from "./service-row-actions";
 
 type Service = {
@@ -20,9 +21,11 @@ type Service = {
 export function ServicesView({
   services,
   isScheduler,
+  timezone,
 }: {
   services: Service[];
   isScheduler: boolean;
+  timezone: string;
 }) {
   const [view, setView] = useState<"list" | "calendar">("list");
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -31,8 +34,14 @@ export function ServicesView({
   const upcoming = services.filter((s) => new Date(s.starts_at) >= now);
   const past = [...services.filter((s) => new Date(s.starts_at) < now)].reverse();
 
+  // Compare by org-local calendar day (yyyy-MM-dd), not isSameDay's system-local
+  // comparison — selectedDay itself is just a calendar-nav day key, not an instant.
   const dayFiltered = selectedDay
-    ? services.filter((s) => isSameDay(new Date(s.starts_at), selectedDay))
+    ? services.filter(
+        (s) =>
+          formatInOrgTime(s.starts_at, timezone, "yyyy-MM-dd") ===
+          format(selectedDay, "yyyy-MM-dd")
+      )
     : null;
 
   return (
@@ -60,6 +69,7 @@ export function ServicesView({
           getDate={(s) => s.starts_at}
           selectedDay={selectedDay}
           onSelectDay={setSelectedDay}
+          timezone={timezone}
         />
       ) : null}
 
@@ -78,6 +88,7 @@ export function ServicesView({
         title={selectedDay ? undefined : "Upcoming"}
         services={dayFiltered ?? upcoming}
         isScheduler={isScheduler}
+        timezone={timezone}
         emptyLabel={
           selectedDay ? "No services on this day." : "No upcoming services yet."
         }
@@ -88,6 +99,7 @@ export function ServicesView({
           title="Past"
           services={past}
           isScheduler={isScheduler}
+          timezone={timezone}
           muted
         />
       ) : null}
@@ -99,12 +111,14 @@ function ServiceList({
   title,
   services,
   isScheduler,
+  timezone,
   emptyLabel,
   muted,
 }: {
   title?: string;
   services: Service[];
   isScheduler: boolean;
+  timezone: string;
   emptyLabel?: string;
   muted?: boolean;
 }) {
@@ -128,7 +142,7 @@ function ServiceList({
                 >
                   <span className="font-medium">{service.title}</span>
                   <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {format(new Date(service.starts_at), "EEE, MMM d yyyy · h:mm a")}
+                    {formatInOrgTime(service.starts_at, timezone, "EEE, MMM d yyyy · h:mm a")}
                     {service.campus ? (
                       <span className="flex items-center gap-1">
                         <MapPin className="size-3.5" /> {service.campus}

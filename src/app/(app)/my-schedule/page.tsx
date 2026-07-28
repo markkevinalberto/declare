@@ -8,7 +8,7 @@ export default async function MySchedulePage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const [{ data: positions }, { data: teamBlockoutRows }] = await Promise.all([
+  const [{ data: positions }, { data: teamBlockoutRows }, { data: org }] = await Promise.all([
     supabase
       .from("positions")
       .select("id, status, services(id, title, starts_at, campus), roles(name)")
@@ -19,7 +19,9 @@ export default async function MySchedulePage() {
       .select("id, start_date, end_date, reason, profiles(name, email)")
       .eq("org_id", profile.org_id)
       .gte("end_date", today),
+    supabase.from("organizations").select("timezone").eq("id", profile.org_id).single(),
   ]);
+  const timezone = org?.timezone ?? "UTC";
 
   const teamBlockouts = (teamBlockoutRows ?? []).map((b) => {
     const person = b.profiles as unknown as { name: string; email: string } | null;
@@ -57,7 +59,7 @@ export default async function MySchedulePage() {
           Your upcoming appointments — accept or decline below.
         </p>
       </div>
-      <MyScheduleView rows={rows} teamBlockouts={teamBlockouts} />
+      <MyScheduleView rows={rows} teamBlockouts={teamBlockouts} timezone={timezone} />
     </div>
   );
 }

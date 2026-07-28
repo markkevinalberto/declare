@@ -15,13 +15,15 @@ export type GlobalActionId =
   | "blank"
   | "clearText"
   | "openProjector"
-  | "openStage";
+  | "openStage"
+  | "goLive";
 
 export const GLOBAL_ACTION_LABELS: Record<GlobalActionId, string> = {
   blank: "Blank the screen",
   clearText: "Clear text (keep background)",
   openProjector: "Open projector",
   openStage: "Open stage display",
+  goLive: "Push preview to live",
 };
 
 /**
@@ -42,6 +44,7 @@ export const DEFAULT_GLOBAL_KEYMAP: Record<GlobalActionId, KeyCombo> = {
   clearText: { key: "c", ctrl: true, alt: false, shift: false },
   openProjector: { key: "f9", ctrl: false, alt: false, shift: false },
   openStage: { key: "f10", ctrl: false, alt: false, shift: false },
+  goLive: { key: "enter", ctrl: false, alt: false, shift: false },
 };
 
 let idCounter = 0;

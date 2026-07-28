@@ -16,7 +16,6 @@ import {
   type ProjectionSettings,
   type SongProjectionFormat,
 } from "@/lib/projection";
-import { stripHtmlToText } from "@/lib/rich-text";
 
 export async function saveProjectionSettings(settings: ProjectionSettings) {
   const profile = await requireScheduler();
@@ -117,18 +116,24 @@ export async function addContentPlanItem(serviceId: string) {
     .select("id", { count: "exact", head: true })
     .eq("service_id", serviceId);
 
-  const { error } = await supabase.from("service_plan_items").insert({
-    service_id: serviceId,
-    type: "content",
-    title: "Content slide",
-    content_text: "Type anything here…",
-    duration_minutes: 0,
-    sort_order: count ?? 0,
-  });
+  const { data, error } = await supabase
+    .from("service_plan_items")
+    .insert({
+      service_id: serviceId,
+      type: "content",
+      // Blank — the presenter derives a display title from the content text
+      // until the operator explicitly renames it via savePlanItemTitle.
+      title: "",
+      content_text: "Type anything here…",
+      duration_minutes: 0,
+      sort_order: count ?? 0,
+    })
+    .select("id")
+    .single();
 
-  if (error) return { error: "Could not add the content slide." };
+  if (error || !data) return { error: "Could not add the content slide." };
   revalidatePath(`/services/${serviceId}`);
-  return {};
+  return { planItemId: data.id as string };
 }
 
 export async function addMediaPlanItem(serviceId: string) {
@@ -148,18 +153,23 @@ export async function addMediaPlanItem(serviceId: string) {
     .select("id", { count: "exact", head: true })
     .eq("service_id", serviceId);
 
-  const { error } = await supabase.from("service_plan_items").insert({
-    service_id: serviceId,
-    type: "media",
-    title: "Media",
-    duration_minutes: 0,
-    sort_order: count ?? 0,
-    media_config: { files: [] },
-  });
+  const { data, error } = await supabase
+    .from("service_plan_items")
+    .insert({
+      service_id: serviceId,
+      type: "media",
+      // Blank — the presenter derives a display title until renamed.
+      title: "",
+      duration_minutes: 0,
+      sort_order: count ?? 0,
+      media_config: { files: [] },
+    })
+    .select("id")
+    .single();
 
-  if (error) return { error: "Could not add the media item." };
+  if (error || !data) return { error: "Could not add the media item." };
   revalidatePath(`/services/${serviceId}`);
-  return {};
+  return { planItemId: data.id as string };
 }
 
 export async function saveMediaConfig(planItemId: string, config: MediaConfig) {
@@ -167,17 +177,9 @@ export async function saveMediaConfig(planItemId: string, config: MediaConfig) {
   const supabase = await createClient();
 
   const normalized = normalizeMediaConfig(config);
-  const first = normalized.files[0];
-  const title =
-    normalized.files.length === 0
-      ? "Media"
-      : normalized.files.length === 1
-        ? first.name
-        : `Media (${normalized.files.length} files)`;
-
   const { error } = await supabase
     .from("service_plan_items")
-    .update({ media_config: normalized, title })
+    .update({ media_config: normalized })
     .eq("id", planItemId);
 
   if (error) return { error: "Could not save the media item." };
@@ -188,16 +190,30 @@ export async function saveContentText(planItemId: string, html: string) {
   await requireScheduler();
   const supabase = await createClient();
 
-  const preview = stripHtmlToText(html);
   const { error } = await supabase
     .from("service_plan_items")
-    .update({
-      content_text: html,
-      title: preview.slice(0, 80) || "Content slide",
-    })
+    .update({ content_text: html })
     .eq("id", planItemId);
 
   if (error) return { error: "Could not save the content slide." };
+  return {};
+}
+
+/**
+ * Sets an explicit display title for a content or media plan item,
+ * overriding the presenter's auto-derived one (content preview text, or
+ * "Media"/file count). Pass an empty string to go back to auto-deriving it.
+ */
+export async function savePlanItemTitle(planItemId: string, title: string) {
+  await requireScheduler();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("service_plan_items")
+    .update({ title: title.trim() })
+    .eq("id", planItemId);
+
+  if (error) return { error: "Could not rename this item." };
   return {};
 }
 

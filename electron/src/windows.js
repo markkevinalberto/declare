@@ -11,8 +11,56 @@
 const path = require("path");
 const { BrowserWindow, screen, shell } = require("electron");
 const { APP_URL, ICON_PATH } = require("./constants");
+const { log } = require("./logger");
 
 const PRELOAD_PATH = path.join(__dirname, "preload.js");
+
+/** Matches Electron's normal DevTools shortcuts (F12, or Ctrl+Shift+I), which
+ * silently stop working once Menu.setApplicationMenu(null) removes the
+ * default menu template they're normally wired through. */
+function isDevToolsShortcut(input) {
+  if (input.type !== "keyDown") return false;
+  if (input.key === "F12") return true;
+  return (
+    input.control &&
+    input.shift &&
+    (input.key === "I" || input.key === "i")
+  );
+}
+
+/**
+ * Wires up file-based diagnostics logging (see logger.js) and the DevTools
+ * keyboard-shortcut fallback for a given window. `label` (e.g. "main",
+ * "projector", "stage") is prefixed onto every log line so lines from
+ * different windows are attributable.
+ * @param {import("electron").BrowserWindow} win
+ * @param {string} label
+ */
+function attachDiagnostics(win, label) {
+  win.webContents.on("console-message", (_event, level, message, line, sourceId) => {
+    log(`[${label}] console-message`, { level, message, line, sourceId });
+  });
+  win.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    log(`[${label}] did-fail-load`, { errorCode, errorDescription, validatedURL });
+  });
+  win.webContents.on("did-finish-load", () => {
+    log(`[${label}] did-finish-load`);
+  });
+  win.webContents.on("render-process-gone", (_event, details) => {
+    log(`[${label}] render-process-gone`, details);
+  });
+  win.on("unresponsive", () => {
+    log(`[${label}] unresponsive`);
+  });
+  win.on("responsive", () => {
+    log(`[${label}] responsive`);
+  });
+  win.webContents.on("before-input-event", (_event, input) => {
+    if (isDevToolsShortcut(input)) {
+      win.webContents.toggleDevTools();
+    }
+  });
+}
 
 /** @type {Map<"projector" | "stage", import("electron").BrowserWindow>} */
 const presenterWindows = new Map();
@@ -117,6 +165,7 @@ function createOrFocusPresenterWindow(kind, url, bounds) {
 
   win.loadURL(url);
   attachWindowOpenHandler(win);
+  attachDiagnostics(win, kind);
 
   win.once("ready-to-show", () => {
     win.show();
@@ -141,4 +190,11 @@ function createOrFocusPresenterWindow(kind, url, bounds) {
   return win;
 }
 
-module.exports = { createOrFocusPresenterWindow, attachWindowOpenHandler, getDisplaysInfo, PRELOAD_PATH };
+module.exports = {
+  createOrFocusPresenterWindow,
+  attachWindowOpenHandler,
+  attachDiagnostics,
+  isDevToolsShortcut,
+  getDisplaysInfo,
+  PRELOAD_PATH,
+};

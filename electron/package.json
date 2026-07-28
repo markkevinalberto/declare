@@ -1,6 +1,6 @@
 {
   "name": "declare-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Declare desktop shell — a thin Electron wrapper around the deployed web app, giving the presenter/projector/stage-display feature native window and multi-display control instead of relying on browser APIs.",
   "main": "src/main.js",
@@ -8,7 +8,11 @@
     "start": "electron .",
     "dev": "cross-env DECLARE_APP_URL=http://localhost:3000 electron .",
     "build:icon": "node scripts/build-icon.js",
-    "dist": "npm run build:icon && electron-builder --win nsis"
+    "dist": "npm run build:icon && electron-builder --win nsis",
+    "release": "npm run build:icon && electron-builder --win nsis --publish always"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

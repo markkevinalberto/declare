@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { addDays, format, isSameDay } from "date-fns";
+import { addDays, format } from "date-fns";
 import { CalendarDays, CalendarOff, List, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CalendarGrid } from "@/components/shared/calendar-grid";
+import { formatInOrgTime } from "@/lib/org-time";
 import { RespondButtons } from "../respond/[positionId]/respond-buttons";
 
 type Row = {
@@ -33,9 +34,11 @@ type TeamBlockout = {
 export function MyScheduleView({
   rows,
   teamBlockouts = [],
+  timezone,
 }: {
   rows: Row[];
   teamBlockouts?: TeamBlockout[];
+  timezone: string;
 }) {
   const [view, setView] = useState<"list" | "calendar">("list");
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -44,8 +47,13 @@ export function MyScheduleView({
   const upcoming = rows.filter((r) => new Date(r.service.starts_at) >= now);
   const past = rows.filter((r) => new Date(r.service.starts_at) < now).reverse();
 
+  // Compare by org-local calendar day, not isSameDay's system-local comparison.
   const dayFiltered = selectedDay
-    ? upcoming.filter((r) => isSameDay(new Date(r.service.starts_at), selectedDay))
+    ? upcoming.filter(
+        (r) =>
+          formatInOrgTime(r.service.starts_at, timezone, "yyyy-MM-dd") ===
+          format(selectedDay, "yyyy-MM-dd")
+      )
     : null;
 
   const blockoutsByDay = useMemo(() => {
@@ -94,6 +102,7 @@ export function MyScheduleView({
           selectedDay={selectedDay}
           onSelectDay={setSelectedDay}
           blockoutsByDay={blockoutsByDay}
+          timezone={timezone}
         />
       ) : null}
 
@@ -144,7 +153,7 @@ export function MyScheduleView({
                   {r.role?.name} — {r.service.title}
                 </CardTitle>
                 <CardDescription className="flex flex-col gap-0.5">
-                  <span>{format(new Date(r.service.starts_at), "EEEE, MMMM d, yyyy · h:mm a")}</span>
+                  <span>{formatInOrgTime(r.service.starts_at, timezone, "EEEE, MMMM d, yyyy · h:mm a")}</span>
                   {r.service.campus ? (
                     <span className="flex items-center gap-1">
                       <MapPin className="size-3.5" /> {r.service.campus}
@@ -179,7 +188,7 @@ export function MyScheduleView({
                     {r.role?.name} — {r.service.title}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(r.service.starts_at), "MMM d, yyyy")}
+                    {formatInOrgTime(r.service.starts_at, timezone, "MMM d, yyyy")}
                   </p>
                 </div>
                 <span className="text-sm capitalize text-muted-foreground">{r.status}</span>

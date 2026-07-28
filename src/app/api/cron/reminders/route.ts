@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { format } from "date-fns";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { reminderEmail } from "@/lib/email/templates";
+import { formatInOrgTime } from "@/lib/org-time";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -26,7 +26,7 @@ async function sendRemindersForWindow(
 
   const { data: services } = await admin
     .from("services")
-    .select("id, title, starts_at, org_id")
+    .select("id, title, starts_at, org_id, organizations(name, timezone)")
     .gte("starts_at", start.toISOString())
     .lt("starts_at", end.toISOString());
 
@@ -62,11 +62,16 @@ async function sendRemindersForWindow(
         .eq("category", "reminder")
         .maybeSingle();
 
+      const org = service.organizations as unknown as { name: string; timezone: string } | null;
+      const orgTimezone = org?.timezone ?? "UTC";
+
       if (pref?.email_enabled !== false) {
+        const orgName = org?.name ?? "your church";
         const { subject, html } = reminderEmail({
+          orgName,
           volunteerName: volunteer.name || volunteer.email,
           serviceTitle: service.title,
-          serviceDate: format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a"),
+          serviceDate: formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a"),
           roleName: role.name,
           daysAway: daysFromNow,
           status: position.status as "invited" | "accepted",
@@ -75,7 +80,7 @@ async function sendRemindersForWindow(
               ? `${siteUrl()}/respond/${position.id}`
               : `${siteUrl()}/my-schedule`,
         });
-        await sendEmail({ to: volunteer.email, subject, html });
+        await sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
       }
 
       await admin.from("notifications").insert({
@@ -83,7 +88,7 @@ async function sendRemindersForWindow(
         user_id: position.user_id!,
         type: "reminder",
         title: `Reminder: ${role.name} for ${service.title}`,
-        body: format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a"),
+        body: formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a"),
         link: position.status === "invited" ? `/respond/${position.id}` : "/my-schedule",
       });
 

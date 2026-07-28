@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
 import { Church, MapPin, Music } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { formatInOrgTime } from "@/lib/org-time";
 import { PrintButton } from "./print-button";
 
 function formatMinutes(total: number) {
@@ -47,7 +47,7 @@ export default async function SharedPlanPage({
 
       <h1 className="text-2xl font-semibold tracking-tight">{service.title}</h1>
       <p className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-        <span>{format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a")}</span>
+        <span>{formatInOrgTime(service.starts_at, service.timezone, "EEEE, MMMM d, yyyy · h:mm a")}</span>
         {service.campus ? (
           <span className="flex items-center gap-1">
             <MapPin className="size-3.5" /> {service.campus}

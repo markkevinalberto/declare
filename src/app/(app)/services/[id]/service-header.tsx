@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import { Link2, MapPin, MonitorPlay, Pencil, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatInOrgTime } from "@/lib/org-time";
 import { EditServiceDialog } from "./edit-service-dialog";
 
 type Service = {
@@ -20,9 +20,11 @@ type Service = {
 export function ServiceHeader({
   service,
   isScheduler,
+  timezone,
 }: {
   service: Service;
   isScheduler: boolean;
+  timezone: string;
 }) {
   const [editOpen, setEditOpen] = useState(false);
 
@@ -38,7 +40,7 @@ export function ServiceHeader({
         <div className="grid gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">{service.title}</h1>
           <p className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span>{format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a")}</span>
+            <span>{formatInOrgTime(service.starts_at, timezone, "EEEE, MMMM d, yyyy · h:mm a")}</span>
             {service.campus ? (
               <span className="flex items-center gap-1">
                 <MapPin className="size-3.5" /> {service.campus}

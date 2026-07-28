@@ -125,13 +125,19 @@ export async function openOnPreferredScreen(
   windowName: string,
   choice: ScreenChoice
 ) {
+  // Callers pass root-relative paths (e.g. `/present/${service.id}/screen`),
+  // which browser window.open() resolves fine against the current origin,
+  // but Electron's BrowserWindow.loadURL() has no such implicit base and
+  // fails with ERR_INVALID_URL. Resolve to an absolute URL up front so both
+  // paths get a URL they can actually load.
+  const absoluteUrl = new URL(url, window.location.origin).toString();
   const bridge = getDesktopBridge();
   if (bridge) {
-    await bridge.openPresenterWindow(kind, url, choice);
+    await bridge.openPresenterWindow(kind, absoluteUrl, choice);
     return;
   }
   if (!choice) {
-    window.open(url, windowName);
+    window.open(absoluteUrl, windowName);
     return;
   }
   const getScreenDetails = getScreenDetailsFn();
@@ -154,7 +160,7 @@ export async function openOnPreferredScreen(
     }
   }
   window.open(
-    url,
+    absoluteUrl,
     windowName,
     `left=${bounds.left},top=${bounds.top},width=${bounds.width},height=${bounds.height}`
   );

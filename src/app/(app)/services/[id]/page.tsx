@@ -25,6 +25,13 @@ export default async function ServiceDetailPage({
 
   if (!service) notFound();
 
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("timezone")
+    .eq("id", profile.org_id)
+    .single();
+  const timezone = org?.timezone ?? "UTC";
+
   const emptyPeople = Promise.resolve({
     data: [] as { id: string; name: string; email: string; active: boolean }[],
   });
@@ -72,7 +79,7 @@ export default async function ServiceDetailPage({
 
   return (
     <div className="grid gap-4">
-      <ServiceHeader service={service} isScheduler={isScheduler} />
+      <ServiceHeader service={service} isScheduler={isScheduler} timezone={timezone} />
       <Tabs defaultValue="plan">
         <TabsList>
           <TabsTrigger value="plan">Plan</TabsTrigger>

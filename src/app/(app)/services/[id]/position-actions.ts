@@ -5,7 +5,7 @@ import { requireScheduler } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { positionInviteEmail } from "@/lib/email/templates";
-import { format } from "date-fns";
+import { formatInOrgTime } from "@/lib/org-time";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -54,7 +54,7 @@ async function loadPositionForInvite(supabase: Awaited<ReturnType<typeof createC
   const { data } = await supabase
     .from("positions")
     .select(
-      "id, status, service_id, user_id, services(title, starts_at, org_id), roles(name), profiles!positions_user_id_fkey(name, email)"
+      "id, status, service_id, user_id, services(title, starts_at, org_id, organizations(name, timezone)), roles(name), profiles!positions_user_id_fkey(name, email)"
     )
     .eq("id", positionId)
     .single();
@@ -72,6 +72,7 @@ async function dispatchInvite(positionId: string) {
     title: string;
     starts_at: string;
     org_id: string;
+    organizations: { name: string; timezone: string } | null;
   } | null;
   const role = position.roles as unknown as { name: string } | null;
   const volunteer = position.profiles as unknown as {
@@ -79,6 +80,8 @@ async function dispatchInvite(positionId: string) {
     email: string;
   } | null;
   if (!service || !role || !volunteer || !position.user_id) return;
+
+  const orgTimezone = service.organizations?.timezone ?? "UTC";
 
   await supabase
     .from("positions")
@@ -90,7 +93,7 @@ async function dispatchInvite(positionId: string) {
     user_id: position.user_id,
     type: "invite",
     title: `You're invited: ${role.name} for ${service.title}`,
-    body: format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a"),
+    body: formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a"),
     link: "/my-schedule",
   });
 
@@ -99,15 +102,17 @@ async function dispatchInvite(positionId: string) {
     p_category: "invite",
   });
   if (emailEnabled !== false) {
+    const orgName = service.organizations?.name ?? "your church";
     const { subject, html } = positionInviteEmail({
+      orgName,
       volunteerName: volunteer.name || volunteer.email,
       serviceTitle: service.title,
-      serviceDate: format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a"),
+      serviceDate: formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a"),
       roleName: role.name,
       acceptUrl: `${siteUrl()}/respond/${positionId}?action=accept`,
       declineUrl: `${siteUrl()}/respond/${positionId}?action=decline`,
     });
-    await sendEmail({ to: volunteer.email, subject, html });
+    await sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
   }
 
   void profile;

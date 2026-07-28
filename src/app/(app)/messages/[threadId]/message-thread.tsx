@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
 import { toast } from "sonner";
 import { ArrowLeft, Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { formatInOrgTime } from "@/lib/org-time";
 import { markThreadRead, sendMessage } from "../actions";
 
 type Message = {
@@ -37,11 +37,13 @@ export function MessageThread({
   title,
   currentUserId,
   initialMessages,
+  timezone,
 }: {
   threadId: string;
   title: string;
   currentUserId: string;
   initialMessages: Message[];
+  timezone: string;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [body, setBody] = useState("");
@@ -148,7 +150,7 @@ export function MessageThread({
                   ) : null}
                   <div className={cn("flex flex-col gap-0.5", mine && "items-end")}>
                     <span className="text-xs text-muted-foreground">
-                      {mine ? "You" : m.authorName} · {format(new Date(m.created_at), "MMM d, h:mm a")}
+                      {mine ? "You" : m.authorName} · {formatInOrgTime(m.created_at, timezone, "MMM d, h:mm a")}
                     </span>
                     <div
                       className={cn(

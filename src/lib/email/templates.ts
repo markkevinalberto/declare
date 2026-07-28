@@ -1,4 +1,4 @@
-function layout(preheader: string, bodyHtml: string) {
+function layout(orgName: string, preheader: string, bodyHtml: string) {
   return `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -9,12 +9,17 @@ function layout(preheader: string, bodyHtml: string) {
           <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
             <tr>
               <td style="padding:24px 28px 8px;">
-                <div style="font-size:15px;font-weight:600;color:#08121F;">Declare</div>
+                <div style="font-size:15px;font-weight:600;color:#08121F;">${orgName}</div>
               </td>
             </tr>
             <tr>
               <td style="padding:8px 28px 28px;color:#27272a;font-size:14px;line-height:1.6;">
                 ${bodyHtml}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 28px 20px;color:#a1a1aa;font-size:11px;">
+                Sent via Declare
               </td>
             </tr>
           </table>
@@ -38,6 +43,7 @@ export function orgInviteEmail(opts: {
   return {
     subject: `You're invited to join ${opts.orgName} on Declare`,
     html: layout(
+      opts.orgName,
       `${opts.inviterName} invited you to ${opts.orgName}`,
       `
       <p><strong>${opts.inviterName}</strong> invited you to join <strong>${opts.orgName}</strong> as a <strong>${opts.role}</strong>.</p>
@@ -49,6 +55,7 @@ export function orgInviteEmail(opts: {
 }
 
 export function positionInviteEmail(opts: {
+  orgName: string;
   volunteerName: string;
   serviceTitle: string;
   serviceDate: string;
@@ -59,6 +66,7 @@ export function positionInviteEmail(opts: {
   return {
     subject: `You're scheduled: ${opts.roleName} for ${opts.serviceTitle}`,
     html: layout(
+      opts.orgName,
       `Respond to your ${opts.serviceTitle} invitation`,
       `
       <p>Hi ${opts.volunteerName},</p>
@@ -74,6 +82,7 @@ export function positionInviteEmail(opts: {
 }
 
 export function positionResponseEmail(opts: {
+  orgName: string;
   leaderName: string;
   volunteerName: string;
   serviceTitle: string;
@@ -85,6 +94,7 @@ export function positionResponseEmail(opts: {
   return {
     subject: `${opts.volunteerName} ${verb} ${opts.roleName} — ${opts.serviceTitle}`,
     html: layout(
+      opts.orgName,
       `${opts.volunteerName} ${verb} their invitation`,
       `
       <p>Hi ${opts.leaderName},</p>
@@ -96,6 +106,7 @@ export function positionResponseEmail(opts: {
 }
 
 export function reminderEmail(opts: {
+  orgName: string;
   volunteerName: string;
   serviceTitle: string;
   serviceDate: string;
@@ -111,6 +122,7 @@ export function reminderEmail(opts: {
   return {
     subject: heading,
     html: layout(
+      opts.orgName,
       heading,
       `
       <p>Hi ${opts.volunteerName},</p>

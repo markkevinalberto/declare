@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { format } from "date-fns";
 import { CalendarDays, Inbox, MapPin, UserX } from "lucide-react";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { formatInOrgTime } from "@/lib/org-time";
 import {
   Card,
   CardContent,
@@ -45,6 +45,13 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   const isScheduler = profile.role === "admin" || profile.role === "leader";
   const now = new Date().toISOString();
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("timezone")
+    .eq("id", profile.org_id)
+    .single();
+  const timezone = org?.timezone ?? "UTC";
 
   const { data: nextServices } = await supabase
     .from("services")
@@ -97,7 +104,7 @@ export default async function DashboardPage() {
                     <span className="font-medium">{p.roles?.name}</span> for {p.services!.title}
                   </span>
                   <span className="text-muted-foreground">
-                    {format(new Date(p.services!.starts_at), "MMM d, h:mm a")}
+                    {formatInOrgTime(p.services!.starts_at, timezone, "MMM d, h:mm a")}
                   </span>
                 </Link>
               ))}
@@ -127,7 +134,7 @@ export default async function DashboardPage() {
                       <span className="font-medium">{p.roles?.name}</span> for {p.services!.title}
                     </span>
                     <span className="text-muted-foreground">
-                      {format(new Date(p.services!.starts_at), "MMM d, h:mm a")}
+                      {formatInOrgTime(p.services!.starts_at, timezone, "MMM d, h:mm a")}
                     </span>
                   </Link>
                 ))}
@@ -198,7 +205,7 @@ export default async function DashboardPage() {
                       <span className="flex flex-col">
                         <span className="font-medium">{s.title}</span>
                         <span className="flex items-center gap-1 text-muted-foreground">
-                          {format(new Date(s.starts_at), "EEE, MMM d · h:mm a")}
+                          {formatInOrgTime(s.starts_at, timezone, "EEE, MMM d · h:mm a")}
                           {s.campus ? (
                             <span className="flex items-center gap-1">
                               <MapPin className="size-3" /> {s.campus}
@@ -237,7 +244,7 @@ export default async function DashboardPage() {
                       <span className="font-medium">{u.role.name}</span> for {u.service.title}
                     </span>
                     <span className="text-muted-foreground">
-                      {format(new Date(u.service.starts_at), "MMM d")}
+                      {formatInOrgTime(u.service.starts_at, timezone, "MMM d")}
                     </span>
                   </Link>
                 ))}
@@ -269,7 +276,7 @@ export default async function DashboardPage() {
                       {p.services!.title}
                     </span>
                     <span className="text-muted-foreground">
-                      {format(new Date(p.services!.starts_at), "MMM d")}
+                      {formatInOrgTime(p.services!.starts_at, timezone, "MMM d")}
                     </span>
                   </Link>
                 ))}

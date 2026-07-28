@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { format } from "date-fns";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatInOrgTime } from "@/lib/org-time";
 import { createThread } from "./actions";
 
 type Option = { id: string; label: string };
@@ -29,10 +29,12 @@ export function NewThreadDialog({
   groups,
   roles,
   services,
+  timezone,
 }: {
   groups: { id: string; name: string }[];
   roles: { id: string; name: string }[];
   services: { id: string; title: string; starts_at: string }[];
+  timezone: string;
 }) {
   const [open, setOpen] = useState(false);
   const [scopeType, setScopeType] = useState<"role_group" | "role" | "service">("role_group");
@@ -45,9 +47,9 @@ export function NewThreadDialog({
     if (scopeType === "role") return roles.map((r) => ({ id: r.id, label: r.name }));
     return services.map((s) => ({
       id: s.id,
-      label: `${s.title} — ${format(new Date(s.starts_at), "MMM d, yyyy")}`,
+      label: `${s.title} — ${formatInOrgTime(s.starts_at, timezone, "MMM d, yyyy")}`,
     }));
-  }, [scopeType, groups, roles, services]);
+  }, [scopeType, groups, roles, services, timezone]);
 
   function handleScopeIdChange(id: string) {
     setScopeId(id);

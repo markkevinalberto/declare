@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import { MapPin } from "lucide-react";
 import {
   Card,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { formatInOrgTime } from "@/lib/org-time";
 import { RespondButtons } from "./respond-buttons";
 
 export default async function RespondPage({
@@ -20,13 +20,17 @@ export default async function RespondPage({
   const profile = await requireOrgProfile();
   const supabase = await createClient();
 
-  const { data: position } = await supabase
-    .from("positions")
-    .select(
-      "id, status, user_id, services(title, starts_at, campus), roles(name)"
-    )
-    .eq("id", positionId)
-    .single();
+  const [{ data: position }, { data: org }] = await Promise.all([
+    supabase
+      .from("positions")
+      .select(
+        "id, status, user_id, services(title, starts_at, campus), roles(name)"
+      )
+      .eq("id", positionId)
+      .single(),
+    supabase.from("organizations").select("timezone").eq("id", profile.org_id).single(),
+  ]);
+  const timezone = org?.timezone ?? "UTC";
 
   if (!position || position.user_id !== profile.id) {
     return (
@@ -57,7 +61,7 @@ export default async function RespondPage({
         </CardTitle>
         <CardDescription>
           <span className="flex flex-col gap-1">
-            <span>{format(new Date(service.starts_at), "EEEE, MMMM d, yyyy · h:mm a")}</span>
+            <span>{formatInOrgTime(service.starts_at, timezone, "EEEE, MMMM d, yyyy · h:mm a")}</span>
             {service.campus ? (
               <span className="flex items-center gap-1">
                 <MapPin className="size-3.5" /> {service.campus}

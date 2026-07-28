@@ -20,11 +20,15 @@ export default async function ThreadPage({
 
   if (!thread) notFound();
 
-  const { data: messages } = await supabase
-    .from("messages")
-    .select("id, body, user_id, created_at, profiles!messages_user_id_fkey(name, email, avatar_url)")
-    .eq("thread_id", threadId)
-    .order("created_at", { ascending: true });
+  const [{ data: messages }, { data: org }] = await Promise.all([
+    supabase
+      .from("messages")
+      .select("id, body, user_id, created_at, profiles!messages_user_id_fkey(name, email, avatar_url)")
+      .eq("thread_id", threadId)
+      .order("created_at", { ascending: true }),
+    supabase.from("organizations").select("timezone").eq("id", profile.org_id).single(),
+  ]);
+  const timezone = org?.timezone ?? "UTC";
 
   type Author = { name: string; email: string; avatar_url: string | null } | null;
 
@@ -33,6 +37,7 @@ export default async function ThreadPage({
       threadId={thread.id}
       title={thread.title}
       currentUserId={profile.id}
+      timezone={timezone}
       initialMessages={(messages ?? []).map((m) => ({
         id: m.id,
         body: m.body,

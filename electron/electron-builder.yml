@@ -3,6 +3,10 @@ productName: Declare
 directories:
   output: dist
   buildResources: build
+publish:
+  provider: github
+  owner: markkevinalberto
+  repo: declare
 files:
   - src/**/*
   - package.json

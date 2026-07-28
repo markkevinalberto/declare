@@ -75,6 +75,7 @@ export default async function PresentPage({
           {
             planItemId: item.id,
             kind: "content",
+            title: item.title ?? "",
             text: item.content_text ?? "",
             projectionFormat: item.projection_format,
           },

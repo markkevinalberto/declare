@@ -25,10 +25,18 @@ function Avatar({
   )
 }
 
-function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+function AvatarImage({
+  className,
+  referrerPolicy = "no-referrer",
+  ...props
+}: AvatarPrimitive.Image.Props) {
+  // Google OAuth avatar URLs (lh3.googleusercontent.com) reject requests
+  // that leak a referrer, so they 403 as a plain <img> unless the referrer
+  // is suppressed — this silently falls through to AvatarFallback otherwise.
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
+      referrerPolicy={referrerPolicy}
       className={cn(
         "aspect-square size-full rounded-full object-cover",
         className
