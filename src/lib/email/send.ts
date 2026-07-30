@@ -18,6 +18,14 @@ function verifiedFromAddress() {
   return match ? match[1] : configured;
 }
 
+/** `fromName` is a church's own org name — fully admin-controlled free
+ * text — interpolated straight into a `"Name <address>"` header. Strip the
+ * characters that would let it break out of the display-name position
+ * (angle brackets, quotes, and any header-splitting control characters). */
+function sanitizeDisplayName(name: string) {
+  return name.replace(/[<>"\r\n]/g, "").trim();
+}
+
 export async function sendEmail({
   to,
   subject,
@@ -40,8 +48,9 @@ export async function sendEmail({
     return { skipped: true };
   }
 
-  const from = fromName
-    ? `${fromName} <${verifiedFromAddress()}>`
+  const cleanFromName = fromName ? sanitizeDisplayName(fromName) : "";
+  const from = cleanFromName
+    ? `${cleanFromName} <${verifiedFromAddress()}>`
     : (process.env.RESEND_FROM_EMAIL ?? "Declare <onboarding@resend.dev>");
   const { error } = await resend.emails.send({ from, to, subject, html });
   if (error) {

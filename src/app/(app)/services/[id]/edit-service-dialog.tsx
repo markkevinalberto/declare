@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { format } from "date-fns";
+import { formatInOrgTime } from "@/lib/org-time";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,10 +25,12 @@ type Service = {
 
 export function EditServiceDialog({
   service,
+  timezone,
   open,
   onOpenChange,
 }: {
   service: Service;
+  timezone: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -41,8 +43,6 @@ export function EditServiceDialog({
     if (!result?.error) onOpenChange(false);
     return result;
   }, undefined);
-
-  const startsAt = new Date(service.starts_at);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -62,7 +62,7 @@ export function EditServiceDialog({
                 id="edit-service-date"
                 name="date"
                 type="date"
-                defaultValue={format(startsAt, "yyyy-MM-dd")}
+                defaultValue={formatInOrgTime(service.starts_at, timezone, "yyyy-MM-dd")}
                 required
               />
             </div>
@@ -72,7 +72,7 @@ export function EditServiceDialog({
                 id="edit-service-time"
                 name="time"
                 type="time"
-                defaultValue={format(startsAt, "HH:mm")}
+                defaultValue={formatInOrgTime(service.starts_at, timezone, "HH:mm")}
                 required
               />
             </div>

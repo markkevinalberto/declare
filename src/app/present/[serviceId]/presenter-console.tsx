@@ -273,6 +273,21 @@ function markGoneLive(serviceId: string) {
   window.dispatchEvent(new Event(GONE_LIVE_EVENT));
 }
 
+// Persists which slide is actually live, per service, so a presenter reload
+// mid-service restores it instead of resetting to slide 0 — which would
+// otherwise get broadcast to the live projector on the next unrelated
+// interaction (toggling Blank, adjusting volume, anything at all).
+function liveIndexKey(serviceId: string) {
+  return `presenter-live-index:${serviceId}`;
+}
+function getPersistedLiveIndex(serviceId: string) {
+  const n = Number(localStorage.getItem(liveIndexKey(serviceId)));
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+function persistLiveIndex(serviceId: string, index: number) {
+  localStorage.setItem(liveIndexKey(serviceId), String(index));
+}
+
 const kindLabel = (kind: QueueGroup["kind"]) =>
   kind === "song"
     ? "song"
@@ -939,14 +954,25 @@ export function PresenterConsole({
     }
   }, [items, biblePassages]);
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  // Restored from localStorage (not just 0) so a presenter reload
+  // mid-service picks up where the live projector actually is, rather than
+  // resetting to slide 0 and later broadcasting that on the next unrelated
+  // interaction.
+  const [activeIndex, setActiveIndex] = useState(() =>
+    getPersistedLiveIndex(service.id)
+  );
   // The operator navigates `previewIndex` — what's shown in the main slide
   // panel — independently of `activeIndex`, which is what's actually live
   // on the projector/stage. They're pushed together by goLive(), or
   // automatically while navigating within the group that's already live
   // (see goTo below) so advancing through a live song's lyrics doesn't
   // require a Go Live press per line.
-  const [previewIndex, setPreviewIndex] = useState(0);
+  const [previewIndex, setPreviewIndex] = useState(() =>
+    getPersistedLiveIndex(service.id)
+  );
+  useEffect(() => {
+    persistLiveIndex(service.id, activeIndex);
+  }, [service.id, activeIndex]);
   const getGoneLiveSnapshot = useCallback(
     () => localStorage.getItem(goneLiveKey(service.id)) === "1",
     [service.id]
@@ -1302,6 +1328,7 @@ export function PresenterConsole({
     crawlText,
     crawlEnabled,
     crawlTarget,
+    hasGoneLive,
   ]);
 
   function updateSettings(patch: Partial<ProjectionSettings>) {
@@ -1388,6 +1415,13 @@ export function PresenterConsole({
       }
 
       if (eventMatchesCombo(e, hotkeySettings.global.goLive)) {
+        // Enter defaults to this hotkey, but Enter is also the browser's
+        // native "activate this button" key — nearly every control here
+        // (Blank, Delete, Add Content, …) is a real <button> that stays
+        // focused after a click, so without this check, clicking Blank and
+        // then pressing Enter would silently push the preview live instead
+        // of doing what the operator actually intended.
+        if (eventTarget?.tagName === "BUTTON") return;
         e.preventDefault();
         goLive();
         return;

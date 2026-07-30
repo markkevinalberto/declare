@@ -33,7 +33,13 @@ export type ParsedSlide = {
   images: { zipPath: string; mimeType: string }[];
 };
 
-function mimeTypeForPath(path: string): string {
+/** Formats an `<img>` tag can actually render. PowerPoint also commonly
+ * embeds EMF/WMF (pasted Office clip-art/vector art) and occasionally TIFF —
+ * none of those render in a browser, so a slide whose only content is one
+ * of those would otherwise "import successfully" as a permanently-broken
+ * image with no indication anything went wrong. Returns null for anything
+ * not in this list so the caller can drop it instead. */
+function mimeTypeForPath(path: string): string | null {
   const ext = path.slice(path.lastIndexOf(".") + 1).toLowerCase();
   switch (ext) {
     case "png":
@@ -47,13 +53,10 @@ function mimeTypeForPath(path: string): string {
       return "image/bmp";
     case "webp":
       return "image/webp";
-    case "tif":
-    case "tiff":
-      return "image/tiff";
     case "svg":
       return "image/svg+xml";
     default:
-      return "application/octet-stream";
+      return null;
   }
 }
 
@@ -94,12 +97,19 @@ async function getOrderedSlidePaths(
 
   const doc = parseXmlDocument(presentationXml);
   const sldIds = doc.getElementsByTagNameNS(NS_P, "sldId");
+  // A well-formed presentation can legitimately have zero slides (all
+  // deleted, or produced by some other tool) — that's not a corrupt file,
+  // so it's not the same error as a genuinely malformed one below.
+  if (sldIds.length === 0) return [];
+
   const paths: string[] = [];
   for (let i = 0; i < sldIds.length; i++) {
     const rId = sldIds[i].getAttributeNS(NS_R, "id");
     const target = rId ? relsMap.get(rId) : undefined;
     if (target) paths.push(target);
   }
+  // Slides were declared but NONE resolved through the rels map — that's
+  // an actually-broken/dangling-reference file, unlike the empty case above.
   if (paths.length === 0) throw new Error(INVALID_FILE_MESSAGE);
   return paths;
 }
@@ -181,7 +191,11 @@ export async function parsePptx(file: File): Promise<ParsedSlide[]> {
       images = relIds
         .map((id) => relsMap.get(id))
         .filter((path): path is string => Boolean(path))
-        .map((path) => ({ zipPath: path, mimeType: mimeTypeForPath(path) }));
+        .map((path) => ({ zipPath: path, mimeType: mimeTypeForPath(path) }))
+        .filter(
+          (img): img is { zipPath: string; mimeType: string } =>
+            img.mimeType !== null
+        );
     }
 
     slides.push({ text, images });

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireScheduler } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import type { createClient as createClientType } from "@/lib/supabase/server";
+import { fromOrgTime } from "@/lib/org-time";
 
 export type ServiceActionState = { error?: string } | undefined;
 
@@ -77,12 +78,18 @@ export async function createService(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
-  const startsAt = new Date(`${parsed.data.date}T${parsed.data.time}`);
+  const supabase = await createClient();
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("timezone")
+    .eq("id", profile.org_id)
+    .single();
+  const timezone = org?.timezone ?? "UTC";
+
+  const startsAt = fromOrgTime(`${parsed.data.date}T${parsed.data.time}`, timezone);
   if (Number.isNaN(startsAt.getTime())) {
     return { error: "Enter a valid date and time." };
   }
-
-  const supabase = await createClient();
 
   if (parsed.data.recurring === "yes" && parsed.data.frequency) {
     const occurrences = parsed.data.occurrences ?? 8;
@@ -232,12 +239,18 @@ export async function updateService(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
-  const startsAt = new Date(`${parsed.data.date}T${parsed.data.time}`);
+  const supabase = await createClient();
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("timezone")
+    .eq("id", profile.org_id)
+    .single();
+  const timezone = org?.timezone ?? "UTC";
+
+  const startsAt = fromOrgTime(`${parsed.data.date}T${parsed.data.time}`, timezone);
   if (Number.isNaN(startsAt.getTime())) {
     return { error: "Enter a valid date and time." };
   }
-
-  const supabase = await createClient();
 
   const { data: existing } = await supabase
     .from("services")

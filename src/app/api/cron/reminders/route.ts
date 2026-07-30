@@ -1,20 +1,26 @@
+import { differenceInCalendarDays } from "date-fns";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { reminderEmail } from "@/lib/email/templates";
-import { formatInOrgTime } from "@/lib/org-time";
+import { formatInOrgTime, toOrgTime } from "@/lib/org-time";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
 
-function dayRange(daysFromNow: number) {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() + daysFromNow);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  return { start, end };
+// "N days away" has to mean N calendar days in the SERVICE'S OWN org
+// timezone, not the server's — a naive server-local-midnight window can be
+// off by up to the org's UTC offset near a day boundary. Query a window
+// wide enough to cover every timezone's own version of "daysFromNow" (26h
+// of slack on each side comfortably covers the +/-14h extremes), then
+// filter precisely per-service using its own org's timezone below.
+function queryWindow(daysFromNow: number) {
+  const now = new Date();
+  const bufferMs = 26 * 60 * 60 * 1000;
+  const start = new Date(now.getTime() - bufferMs);
+  const end = new Date(now.getTime() + daysFromNow * 24 * 60 * 60 * 1000 + bufferMs);
+  return { now, start, end };
 }
 
 async function sendRemindersForWindow(
@@ -22,7 +28,7 @@ async function sendRemindersForWindow(
   daysFromNow: number,
   kind: "3_day" | "1_day"
 ) {
-  const { start, end } = dayRange(daysFromNow);
+  const { now, start, end } = queryWindow(daysFromNow);
 
   const { data: services } = await admin
     .from("services")
@@ -33,6 +39,17 @@ async function sendRemindersForWindow(
   let sent = 0;
 
   for (const service of services ?? []) {
+    const org = service.organizations as unknown as { name: string; timezone: string } | null;
+    const orgTimezone = org?.timezone ?? "UTC";
+
+    // Precise, per-org-timezone check: is this service exactly `daysFromNow`
+    // calendar days away, as measured in ITS OWN timezone?
+    const daysAway = differenceInCalendarDays(
+      toOrgTime(service.starts_at, orgTimezone),
+      toOrgTime(now, orgTimezone)
+    );
+    if (daysAway !== daysFromNow) continue;
+
     const { data: positions } = await admin
       .from("positions")
       .select("id, status, user_id, roles(name), profiles!positions_user_id_fkey(name, email)")
@@ -61,9 +78,6 @@ async function sendRemindersForWindow(
         .eq("user_id", position.user_id!)
         .eq("category", "reminder")
         .maybeSingle();
-
-      const org = service.organizations as unknown as { name: string; timezone: string } | null;
-      const orgTimezone = org?.timezone ?? "UTC";
 
       if (pref?.email_enabled !== false) {
         const orgName = org?.name ?? "your church";

@@ -74,7 +74,12 @@ export function ServiceHeader({
         </div>
       </CardContent>
       {isScheduler ? (
-        <EditServiceDialog service={service} open={editOpen} onOpenChange={setEditOpen} />
+        <EditServiceDialog
+          service={service}
+          timezone={timezone}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+        />
       ) : null}
     </Card>
   );

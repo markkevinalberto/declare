@@ -755,6 +755,10 @@ export interface Database {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      admin_promote_sole_admin_replacement: {
+        Args: { p_user_id: string };
+        Returns: void;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

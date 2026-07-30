@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireSuperAdmin } from "@/lib/auth/current-user";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 export async function adminDeleteUser(userId: string): Promise<{ error?: string }> {
   const profile = await requireSuperAdmin();
@@ -10,49 +11,19 @@ export async function adminDeleteUser(userId: string): Promise<{ error?: string 
     return { error: "You can't delete your own account from here." };
   }
 
+  // Runs as the calling super admin (not the service-role client) so
+  // current_profile_is_super_admin() inside the function sees the real
+  // caller, and takes a per-org advisory lock for the whole check-then-
+  // promote decision — deleting two admins of the same org back to back
+  // can no longer race both requests into skipping promotion.
+  const supabase = await createClient();
+  const { error: promoteError } = await supabase.rpc(
+    "admin_promote_sole_admin_replacement",
+    { p_user_id: userId }
+  );
+  if (promoteError) return { error: promoteError.message };
+
   const admin = createAdminClient();
-
-  const { data: target } = await admin
-    .from("profiles")
-    .select("org_id, role")
-    .eq("id", userId)
-    .single();
-
-  if (target?.org_id && target.role === "admin") {
-    const { count } = await admin
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("org_id", target.org_id)
-      .eq("role", "admin")
-      .neq("id", userId);
-
-    if ((count ?? 0) === 0) {
-      // Sole admin of their org — promote the best remaining candidate first
-      // (a leader if one exists, else the longest-standing active member),
-      // mirroring leave_organization's logic, so the org isn't left with no
-      // one able to manage it.
-      const { data: candidates } = await admin
-        .from("profiles")
-        .select("id, role, created_at")
-        .eq("org_id", target.org_id)
-        .eq("active", true)
-        .neq("id", userId);
-
-      const promote = (candidates ?? []).sort((a, b) => {
-        if ((a.role === "leader") !== (b.role === "leader")) {
-          return a.role === "leader" ? -1 : 1;
-        }
-        return (
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-      })[0];
-
-      if (promote) {
-        await admin.from("profiles").update({ role: "admin" }).eq("id", promote.id);
-      }
-    }
-  }
-
   const { error } = await admin.auth.admin.deleteUser(userId);
   if (error) return { error: error.message };
 
