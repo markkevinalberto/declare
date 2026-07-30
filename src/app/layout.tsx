@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Poppins, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { ServiceWorkerRegistration } from "@/components/providers/service-worker-registration";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -25,6 +26,15 @@ const mono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Declare — Church Service & Volunteer Scheduling",
   description: "Plan Sunday services and schedule volunteers.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Declare",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#245BFF",
 };
 
 export default function RootLayout({
@@ -44,6 +54,7 @@ export default function RootLayout({
             <Toaster richColors position="bottom-right" />
           </TooltipProvider>
         </QueryProvider>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

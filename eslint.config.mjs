@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     // Self-contained Electron subproject — its own package.json/tooling,
     // plain CommonJS by design (see electron/README.md).
     "electron/**",
+    // One-off Node build scripts (icon rasterization etc.) — plain
+    // CommonJS, run directly via `node`, not part of the app bundle.
+    "scripts/**",
   ]),
 ]);
 
