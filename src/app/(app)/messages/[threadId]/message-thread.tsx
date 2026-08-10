@@ -98,8 +98,16 @@ export function MessageThread({
       )
       .subscribe();
 
+    // Realtime has been observed going quietly stale under sustained load
+    // (subscribed with no error, but new events just stop arriving) — a
+    // periodic poll means new messages still show up within moments even
+    // if the live channel silently drops, instead of the thread going
+    // stale until someone manually reloads.
+    const pollId = setInterval(refetch, 20_000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollId);
     };
   }, [threadId]);
 

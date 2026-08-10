@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -48,6 +48,11 @@ export function PlanBuilder({
   isScheduler: boolean;
 }) {
   const [items, setItems] = useState<PlanItem[]>(initialItems);
+  // Drag/save/delete below apply optimistically before the server confirms —
+  // the polling fallback (not the Realtime-triggered path, which only fires
+  // after a write has actually landed) skips itself for a few seconds after
+  // a local edit so it can't overwrite one still in flight with a stale read.
+  const lastLocalEditRef = useRef(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -80,8 +85,19 @@ export function PlanBuilder({
       )
       .subscribe();
 
+    // Realtime has been observed going quietly stale under sustained load
+    // (subscribed with no error, but new events just stop arriving) — a
+    // periodic poll means another scheduler's edits still show up within
+    // moments even if the live channel silently drops, instead of the
+    // plan going stale until someone manually reloads.
+    const pollId = setInterval(() => {
+      if (Date.now() - lastLocalEditRef.current < 5000) return;
+      refetch();
+    }, 20_000);
+
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollId);
     };
   }, [serviceId]);
 
@@ -112,6 +128,7 @@ export function PlanBuilder({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
+    lastLocalEditRef.current = Date.now();
     setItems((prev) => {
       const oldIndex = prev.findIndex((i) => i.id === active.id);
       const newIndex = prev.findIndex((i) => i.id === over.id);
@@ -122,11 +139,13 @@ export function PlanBuilder({
   }
 
   function handleSave(id: string, data: { title: string; description?: string; duration_minutes: number }) {
+    lastLocalEditRef.current = Date.now();
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...data, description: data.description ?? null } : i)));
     updatePlanItem(id, serviceId, data);
   }
 
   function handleDelete(id: string) {
+    lastLocalEditRef.current = Date.now();
     setItems((prev) => prev.filter((i) => i.id !== id));
     deletePlanItem(id, serviceId);
   }
