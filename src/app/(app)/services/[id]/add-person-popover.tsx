@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { createPosition, getConflicts } from "./position-actions";
+import { createPosition, getConflictsForCandidates } from "./position-actions";
 
 type Person = { id: string; name: string; email: string };
 type Conflict = { conflict_type: string; detail: string | null };
@@ -43,12 +43,12 @@ export function AddPersonPopover({
     setOpen(next);
     if (next && candidates.length > 0) {
       setLoading(true);
-      Promise.all(
-        candidates.map((c) => getConflicts(c.id, serviceId).then((res) => [c.id, res] as const))
-      ).then((results) => {
-        setConflicts(Object.fromEntries(results));
-        setLoading(false);
-      });
+      getConflictsForCandidates(candidates.map((c) => c.id), serviceId).then(
+        (byUser) => {
+          setConflicts(byUser);
+          setLoading(false);
+        }
+      );
     }
   }
 

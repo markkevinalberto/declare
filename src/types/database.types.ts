@@ -679,6 +679,10 @@ export interface Database {
         Args: { p_user_id: string; p_service_id: string };
         Returns: { conflict_type: string; detail: string | null }[];
       };
+      scheduling_conflicts_bulk: {
+        Args: { p_user_ids: string[]; p_service_id: string };
+        Returns: { user_id: string; conflict_type: string; detail: string | null }[];
+      };
       get_org_invite: {
         Args: { p_token: string };
         Returns: { email: string; role: ProfileRole; org_name: string; accepted: boolean }[];

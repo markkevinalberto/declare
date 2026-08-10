@@ -11,14 +11,33 @@ function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
 
-export async function getConflicts(userId: string, serviceId: string) {
+/**
+ * Conflicts for every candidate at once, in a single round-trip — the "add
+ * person to role" popover used to call the single-user version once per
+ * candidate, which meant N concurrent Server Action calls (each with its
+ * own auth check) for a role held by N people.
+ */
+export async function getConflictsForCandidates(
+  userIds: string[],
+  serviceId: string
+) {
   await requireScheduler();
+  if (userIds.length === 0) return {};
+
   const supabase = await createClient();
-  const { data } = await supabase.rpc("scheduling_conflicts", {
-    p_user_id: userId,
+  const { data } = await supabase.rpc("scheduling_conflicts_bulk", {
+    p_user_ids: userIds,
     p_service_id: serviceId,
   });
-  return data ?? [];
+
+  const byUser: Record<string, { conflict_type: string; detail: string | null }[]> =
+    {};
+  for (const row of data ?? []) {
+    const list = byUser[row.user_id] ?? [];
+    list.push({ conflict_type: row.conflict_type, detail: row.detail });
+    byUser[row.user_id] = list;
+  }
+  return byUser;
 }
 
 export async function createPosition(
