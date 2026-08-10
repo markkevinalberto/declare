@@ -66,7 +66,12 @@ async function dispatchInvite(positionId: string) {
   const supabase = await createClient();
 
   const position = await loadPositionForInvite(supabase, positionId);
-  if (!position || position.status !== "draft") return;
+  // Draft: the first send. Invited: a scheduler-triggered resend for
+  // someone who hasn't responded yet — everything else (accepted/declined)
+  // already has an answer, so there's nothing to (re-)send.
+  if (!position || (position.status !== "draft" && position.status !== "invited")) {
+    return;
+  }
 
   const service = position.services as unknown as {
     title: string;
@@ -136,6 +141,24 @@ export async function sendAllInvites(serviceId: string) {
 
   for (const draft of drafts ?? []) {
     await dispatchInvite(draft.id);
+  }
+
+  revalidatePath(`/services/${serviceId}`);
+}
+
+export async function resendAllPendingInvites(serviceId: string) {
+  const profile = await requireScheduler();
+  const supabase = await createClient();
+
+  const { data: invited } = await supabase
+    .from("positions")
+    .select("id")
+    .eq("service_id", serviceId)
+    .eq("org_id", profile.org_id)
+    .eq("status", "invited");
+
+  for (const position of invited ?? []) {
+    await dispatchInvite(position.id);
   }
 
   revalidatePath(`/services/${serviceId}`);

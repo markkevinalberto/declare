@@ -118,10 +118,10 @@ export function RoleScheduleRow({
     });
   }
 
-  function handleSend(positionId: string) {
+  function handleSend(positionId: string, kind: "send" | "resend") {
     startTransition(async () => {
       await sendInvite(positionId, serviceId);
-      toast.success("Invite sent");
+      toast.success(kind === "resend" ? "Invite resent" : "Invite sent");
     });
   }
 
@@ -200,9 +200,20 @@ export function RoleScheduleRow({
                     variant="ghost"
                     size="sm"
                     disabled={pending}
-                    onClick={() => handleSend(position.id)}
+                    onClick={() => handleSend(position.id, "send")}
                   >
                     <Send /> Send now
+                  </Button>
+                ) : null}
+                {isScheduler && position.status === "invited" ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={pending}
+                    title="They haven't responded yet — send the invite email again"
+                    onClick={() => handleSend(position.id, "resend")}
+                  >
+                    <Send /> Resend
                   </Button>
                 ) : null}
                 {isScheduler ? (

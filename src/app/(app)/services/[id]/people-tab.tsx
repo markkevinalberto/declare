@@ -2,10 +2,10 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, CircleHelp, Send, XCircle } from "lucide-react";
+import { Bell, CheckCircle2, CircleHelp, Send, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { sendAllInvites } from "./position-actions";
+import { resendAllPendingInvites, sendAllInvites } from "./position-actions";
 import { RoleScheduleRow } from "./role-schedule-row";
 
 export type PositionRow = {
@@ -106,11 +106,19 @@ export function PeopleTab({
 
   const totalCounts = countStatuses(positions);
   const draftCount = totalCounts.draft;
+  const pendingCount = totalCounts.pending;
 
   function handleSendAll() {
     startTransition(async () => {
       await sendAllInvites(serviceId);
       toast.success("Invites sent");
+    });
+  }
+
+  function handleRemindAll() {
+    startTransition(async () => {
+      await resendAllPendingInvites(serviceId);
+      toast.success("Reminder emails sent");
     });
   }
 
@@ -128,9 +136,19 @@ export function PeopleTab({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <StatusCounts counts={totalCounts} />
         {isScheduler ? (
-          <Button onClick={handleSendAll} disabled={pending || draftCount === 0}>
-            <Send /> Send Invites{draftCount > 0 ? ` (${draftCount})` : " (0)"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleSendAll} disabled={pending || draftCount === 0}>
+              <Send /> Send Invites{draftCount > 0 ? ` (${draftCount})` : " (0)"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleRemindAll}
+              disabled={pending || pendingCount === 0}
+              title="Resend the invite email to everyone who hasn't responded yet"
+            >
+              <Bell /> Remind Pending{pendingCount > 0 ? ` (${pendingCount})` : " (0)"}
+            </Button>
+          </div>
         ) : null}
       </div>
 
