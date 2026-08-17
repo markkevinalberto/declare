@@ -6,6 +6,7 @@ import { Link2, MapPin, MonitorPlay, Pencil, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInOrgTime } from "@/lib/org-time";
+import { FEATURES } from "@/lib/features";
 import { EditServiceDialog } from "./edit-service-dialog";
 
 type Service = {
@@ -52,17 +53,21 @@ export function ServiceHeader({
           ) : null}
         </div>
         <div className="flex items-center gap-1 print:hidden">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<a href={`/present/${service.id}`} target="_blank" rel="noreferrer" />}
-          >
-            <MonitorPlay /> Present
-          </Button>
-          <Button variant="outline" size="sm" onClick={copyShareLink}>
-            <Link2 /> Share link
-          </Button>
+          {FEATURES.presenter ? (
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<a href={`/present/${service.id}`} target="_blank" rel="noreferrer" />}
+            >
+              <MonitorPlay /> Present
+            </Button>
+          ) : null}
+          {FEATURES.planning ? (
+            <Button variant="outline" size="sm" onClick={copyShareLink}>
+              <Link2 /> Share link
+            </Button>
+          ) : null}
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer /> Print
           </Button>

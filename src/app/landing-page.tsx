@@ -11,6 +11,7 @@ import {
 import { DeclareMark } from "@/components/brand/declare-mark";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { FEATURES as FEATURE_FLAGS } from "@/lib/features";
 
 // Windows installer — hosted as a GitHub release rather than bundled into
 // the Vercel deployment (it's ~80MB, and the app icon/screenshots already
@@ -26,9 +27,11 @@ type Feature = {
   description: string;
   image: string;
   imageAlt: string;
+  /** Omit for features shown regardless of feature-flag state. */
+  requires?: "planning" | "presenter";
 };
 
-const FEATURES: Feature[] = [
+const ALL_FEATURES: Feature[] = [
   {
     icon: CalendarDays,
     eyebrow: "Service planning",
@@ -37,6 +40,7 @@ const FEATURES: Feature[] = [
       "Lay out songs, scripture, announcements, and sermon segments in order, see the running time update as you go, and keep every service's plan in one place your whole team can see.",
     image: "/marketing/services.png",
     imageAlt: "Service plan builder showing a Sunday service flow with songs, scripture, and segments in order",
+    requires: "planning",
   },
   {
     icon: Users,
@@ -55,6 +59,7 @@ const FEATURES: Feature[] = [
       "Drive lyrics, scripture, and announcements to a projector and a separate stage monitor for your team, with countdown timers, a scrolling announcement bar, and full keyboard shortcut control — all from a single console.",
     image: "/marketing/presenter.png",
     imageAlt: "Presenter console with a schedule of songs and slides, live confidence monitor, and playback controls",
+    requires: "presenter",
   },
   {
     icon: Users2,
@@ -66,6 +71,10 @@ const FEATURES: Feature[] = [
     imageAlt: "People page showing a roster of volunteers with their roles and permissions",
   },
 ];
+
+const FEATURES = ALL_FEATURES.filter(
+  (f) => !f.requires || FEATURE_FLAGS[f.requires]
+);
 
 function ScreenshotFrame({
   src,
@@ -107,15 +116,17 @@ export function LandingPage() {
             <span className="text-lg font-semibold tracking-tight">Declare</span>
           </div>
           <nav className="flex items-center gap-2">
-            <a
-              href="#desktop-app"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "sm" }),
-                "hidden sm:inline-flex"
-              )}
-            >
-              <Monitor /> Desktop app
-            </a>
+            {FEATURE_FLAGS.presenter ? (
+              <a
+                href="#desktop-app"
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "hidden sm:inline-flex"
+                )}
+              >
+                <Monitor /> Desktop app
+              </a>
+            ) : null}
             <Link
               href="/login"
               className={buttonVariants({ variant: "ghost", size: "sm" })}
@@ -132,14 +143,13 @@ export function LandingPage() {
       <main>
         <section className="mx-auto max-w-6xl px-6 pt-16 pb-12 text-center sm:pt-24">
           <h1 className="mx-auto max-w-3xl font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Plan services, schedule volunteers, and run the room —
+            Schedule volunteers and run your church team —
             <span className="text-primary"> all in one place</span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground text-balance">
-            Declare is the church operating system for teams that plan
-            Sunday services, schedule volunteers, and present live — built to
-            replace the spreadsheet, the group chat, and the separate
-            presentation software all at once.
+            Declare is the church operating system for teams that schedule
+            volunteers and manage their roster — built to replace the
+            spreadsheet and the group chat.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/signup" className={buttonVariants({ size: "lg" })}>
@@ -155,8 +165,8 @@ export function LandingPage() {
 
           <div className="mx-auto mt-16 max-w-5xl">
             <ScreenshotFrame
-              src="/marketing/presenter.png"
-              alt="The Declare presenter console, showing a service schedule, live slide preview, and playback controls"
+              src="/marketing/dashboard.png"
+              alt="The Declare dashboard, showing upcoming services, unfilled positions, and pending volunteer responses"
               priority
             />
           </div>
@@ -194,40 +204,42 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section
-          id="desktop-app"
-          className="scroll-mt-16 border-t bg-[#08121F] text-white"
-        >
-          <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/40">
-              <Monitor className="size-7 text-primary-foreground" />
+        {FEATURE_FLAGS.presenter ? (
+          <section
+            id="desktop-app"
+            className="scroll-mt-16 border-t bg-[#08121F] text-white"
+          >
+            <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
+              <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/40">
+                <Monitor className="size-7 text-primary-foreground" />
+              </div>
+              <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white/90">
+                Desktop app
+              </div>
+              <h2 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                Run the presenter console as a native Windows app
+              </h2>
+              <p className="mx-auto mt-4 max-w-xl text-white/70 text-balance">
+                Install Declare on the machine that runs your projector for real
+                fullscreen on any monitor, reliable multi-display output for
+                your projector and stage screen, and none of the popup-blocker
+                or permission hassles that come with running it in a browser
+                tab.
+              </p>
+              <div className="mt-8">
+                <a
+                  href={DESKTOP_DOWNLOAD_URL}
+                  className={buttonVariants({ size: "lg" })}
+                >
+                  <Download /> Download for Windows
+                </a>
+              </div>
+              <p className="mt-4 text-xs text-white/50">
+                Free · Windows 10/11 · v0.1.0
+              </p>
             </div>
-            <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white/90">
-              Desktop app
-            </div>
-            <h2 className="mt-4 font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-              Run the presenter console as a native Windows app
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-white/70 text-balance">
-              Install Declare on the machine that runs your projector for real
-              fullscreen on any monitor, reliable multi-display output for
-              your projector and stage screen, and none of the popup-blocker
-              or permission hassles that come with running it in a browser
-              tab.
-            </p>
-            <div className="mt-8">
-              <a
-                href={DESKTOP_DOWNLOAD_URL}
-                className={buttonVariants({ size: "lg" })}
-              >
-                <Download /> Download for Windows
-              </a>
-            </div>
-            <p className="mt-4 text-xs text-white/50">
-              Free · Windows 10/11 · v0.1.0
-            </p>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         <section className="border-t bg-muted/30">
           <div className="mx-auto max-w-3xl px-6 py-20 text-center">

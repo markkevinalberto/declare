@@ -2,8 +2,10 @@ import { notFound } from "next/navigation";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FEATURES } from "@/lib/features";
 import { ServiceHeader } from "./service-header";
 import { PlanBuilder } from "./plan-builder";
+import type { PlanItem } from "./plan-item-row";
 import { PeopleTab, type PositionRow } from "./people-tab";
 
 export default async function ServiceDetailPage({
@@ -39,13 +41,19 @@ export default async function ServiceDetailPage({
     data: [] as { user_id: string; role_id: string }[],
   });
 
+  // Plan items aren't fetched at all while the plan builder is hidden —
+  // one less query, and there's nothing to render them into anyway.
+  const emptyItems = Promise.resolve({ data: [] as PlanItem[] });
+
   const [{ data: items }, { data: groups }, { data: roles }, { data: positions }, { data: userRoles }, { data: people }] =
     await Promise.all([
-      supabase
-        .from("service_plan_items")
-        .select("*")
-        .eq("service_id", id)
-        .order("sort_order"),
+      FEATURES.planning
+        ? supabase
+            .from("service_plan_items")
+            .select("*")
+            .eq("service_id", id)
+            .order("sort_order")
+        : emptyItems,
       supabase
         .from("role_groups")
         .select("id, name, sort_order")
@@ -77,30 +85,36 @@ export default async function ServiceDetailPage({
         : emptyPeople,
     ]);
 
+  const peopleTab = (
+    <PeopleTab
+      serviceId={id}
+      groups={groups ?? []}
+      roles={roles ?? []}
+      positions={(positions ?? []) as unknown as PositionRow[]}
+      userRoles={userRoles ?? []}
+      people={people ?? []}
+      isScheduler={isScheduler}
+      currentUserId={profile.id}
+    />
+  );
+
   return (
     <div className="grid gap-4">
       <ServiceHeader service={service} isScheduler={isScheduler} timezone={timezone} />
-      <Tabs defaultValue="plan">
-        <TabsList>
-          <TabsTrigger value="plan">Plan</TabsTrigger>
-          <TabsTrigger value="people">People</TabsTrigger>
-        </TabsList>
-        <TabsContent value="plan">
-          <PlanBuilder serviceId={id} initialItems={items ?? []} isScheduler={isScheduler} />
-        </TabsContent>
-        <TabsContent value="people">
-          <PeopleTab
-            serviceId={id}
-            groups={groups ?? []}
-            roles={roles ?? []}
-            positions={(positions ?? []) as unknown as PositionRow[]}
-            userRoles={userRoles ?? []}
-            people={people ?? []}
-            isScheduler={isScheduler}
-            currentUserId={profile.id}
-          />
-        </TabsContent>
-      </Tabs>
+      {FEATURES.planning ? (
+        <Tabs defaultValue="plan">
+          <TabsList>
+            <TabsTrigger value="plan">Plan</TabsTrigger>
+            <TabsTrigger value="people">People</TabsTrigger>
+          </TabsList>
+          <TabsContent value="plan">
+            <PlanBuilder serviceId={id} initialItems={items ?? []} isScheduler={isScheduler} />
+          </TabsContent>
+          <TabsContent value="people">{peopleTab}</TabsContent>
+        </Tabs>
+      ) : (
+        peopleTab
+      )}
     </div>
   );
 }
