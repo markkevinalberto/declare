@@ -30,3 +30,22 @@ export async function adminDeleteUser(userId: string): Promise<{ error?: string 
   revalidatePath("/admin");
   return {};
 }
+
+export async function setSmsRemindersEnabled(
+  enabled: boolean
+): Promise<{ error?: string }> {
+  const profile = await requireSuperAdmin();
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("app_settings")
+    .update({
+      sms_reminders_enabled: enabled,
+      updated_at: new Date().toISOString(),
+      updated_by: profile.id,
+    })
+    .eq("id", true);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin");
+  return {};
+}

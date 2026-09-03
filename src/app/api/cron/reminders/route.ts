@@ -6,6 +6,7 @@ import { reminderEmail } from "@/lib/email/templates";
 import { formatInOrgTime, toOrgTime } from "@/lib/org-time";
 import { sendSms } from "@/lib/sms";
 import { renderNamedSmsTemplate } from "@/lib/sms-templates";
+import { getSmsRemindersEnabled } from "@/lib/app-settings";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -28,7 +29,8 @@ function queryWindow(daysFromNow: number) {
 async function sendRemindersForWindow(
   admin: ReturnType<typeof createAdminClient>,
   daysFromNow: number,
-  kind: "3_day" | "1_day"
+  kind: "3_day" | "1_day",
+  smsEnabled: boolean
 ) {
   const { now, start, end } = queryWindow(daysFromNow);
 
@@ -103,7 +105,7 @@ async function sendRemindersForWindow(
         await sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
       }
 
-      if (volunteer.phone) {
+      if (smsEnabled && volunteer.phone) {
         const smsText = await renderNamedSmsTemplate(
           service.org_id,
           position.status === "invited" ? "reminder_pending" : "reminder_confirmed",
@@ -143,10 +145,11 @@ async function handleReminders(request: Request) {
   }
 
   const admin = createAdminClient();
-  const sent3Day = await sendRemindersForWindow(admin, 3, "3_day");
-  const sent1Day = await sendRemindersForWindow(admin, 1, "1_day");
+  const smsEnabled = await getSmsRemindersEnabled();
+  const sent3Day = await sendRemindersForWindow(admin, 3, "3_day", smsEnabled);
+  const sent1Day = await sendRemindersForWindow(admin, 1, "1_day", smsEnabled);
 
-  return NextResponse.json({ sent3Day, sent1Day });
+  return NextResponse.json({ sent3Day, sent1Day, smsEnabled });
 }
 
 // Vercel Cron invokes scheduled routes with GET; support POST too for

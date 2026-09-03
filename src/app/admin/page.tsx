@@ -1,22 +1,32 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { MessageSquareText, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { requireSuperAdmin } from "@/lib/auth/current-user";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSmsRemindersEnabled } from "@/lib/app-settings";
 import { logout } from "@/app/(auth)/actions";
 import { AdminUsersTable, type AdminUserRow } from "./admin-users-table";
+import { SmsRemindersToggle } from "./sms-reminders-toggle";
 
 export default async function AdminPage() {
   const profile = await requireSuperAdmin();
   const admin = createAdminClient();
 
-  const [{ data: profiles }, { data: orgs }, { data: authUsers }] =
+  const [{ data: profiles }, { data: orgs }, { data: authUsers }, smsRemindersEnabled] =
     await Promise.all([
       admin
         .from("profiles")
         .select("id, name, email, role, org_id, active, created_at, is_super_admin"),
       admin.from("organizations").select("id, name"),
       admin.auth.admin.listUsers({ perPage: 1000 }),
+      getSmsRemindersEnabled(),
     ]);
 
   const orgNameById = new Map((orgs ?? []).map((o) => [o.id, o.name]));
@@ -62,6 +72,24 @@ export default async function AdminPage() {
         </form>
       </header>
       <main className="mx-auto max-w-6xl p-4 md:p-6">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquareText className="size-4 text-primary" />
+              SMS reminders
+            </CardTitle>
+            <CardDescription>
+              Platform-wide switch for the SMS side of reminder texts (email
+              reminders keep sending either way) — the AkeriusSMS gateway is
+              one shared phone/SIM across every organization, so this isn&apos;t
+              a per-org setting.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SmsRemindersToggle initialEnabled={smsRemindersEnabled} />
+          </CardContent>
+        </Card>
+
         <h1 className="mb-1 text-2xl font-semibold tracking-tight">
           All registered users
         </h1>
