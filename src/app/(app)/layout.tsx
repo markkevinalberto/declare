@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +9,9 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const profile = await requireOrgProfile();
+  // Mandatory — every user with no mobile number on file is sent here
+  // before anything else in the app, on every login until it's filled in.
+  if (!profile.phone) redirect("/onboarding/phone");
   const supabase = await createClient();
 
   const [{ data: org }, { count: unreadCount }] = await Promise.all([

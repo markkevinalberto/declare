@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { requireOrgProfile } from "@/lib/auth/current-user";
 
 export type OnboardingState = { error?: string } | undefined;
 
@@ -44,6 +45,38 @@ export async function acceptInvite(
   const { error } = await supabase.rpc("accept_org_invite", {
     p_token: token,
   });
+  if (error) return { error: error.message };
+
+  redirect("/dashboard");
+}
+
+const phoneSchema = z.object({
+  // Permissive on formatting (spaces/dashes/parens/leading +) — just makes
+  // sure something phone-shaped was actually typed, not a full E.164 check.
+  phone: z
+    .string()
+    .min(1, "Enter your mobile number.")
+    .refine(
+      (v) => v.replace(/[^0-9]/g, "").length >= 7,
+      "Enter a valid mobile number."
+    ),
+});
+
+export async function setPhoneNumber(
+  _prevState: OnboardingState,
+  formData: FormData
+): Promise<OnboardingState> {
+  const profile = await requireOrgProfile();
+  const parsed = phoneSchema.safeParse({ phone: formData.get("phone") });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ phone: parsed.data.phone.trim() })
+    .eq("id", profile.id);
   if (error) return { error: error.message };
 
   redirect("/dashboard");
