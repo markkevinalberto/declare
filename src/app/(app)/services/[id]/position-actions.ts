@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
 import { positionInviteEmail } from "@/lib/email/templates";
 import { formatInOrgTime } from "@/lib/org-time";
+import { sendSms } from "@/lib/sms";
+import { renderNamedSmsTemplate } from "@/lib/sms-templates";
+import { getSmsRemindersEnabled } from "@/lib/app-settings";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -73,7 +76,7 @@ async function loadPositionForInvite(supabase: Awaited<ReturnType<typeof createC
   const { data } = await supabase
     .from("positions")
     .select(
-      "id, status, service_id, user_id, services(title, starts_at, org_id, organizations(name, timezone)), roles(name), profiles!positions_user_id_fkey(name, email)"
+      "id, status, service_id, user_id, services(title, starts_at, org_id, organizations(name, timezone)), roles(name), profiles!positions_user_id_fkey(name, email, phone)"
     )
     .eq("id", positionId)
     .single();
@@ -102,10 +105,12 @@ async function dispatchInvite(positionId: string) {
   const volunteer = position.profiles as unknown as {
     name: string;
     email: string;
+    phone: string | null;
   } | null;
   if (!service || !role || !volunteer || !position.user_id) return;
 
   const orgTimezone = service.organizations?.timezone ?? "UTC";
+  const serviceDate = formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a");
 
   await supabase
     .from("positions")
@@ -117,9 +122,12 @@ async function dispatchInvite(positionId: string) {
     user_id: position.user_id,
     type: "invite",
     title: `You're invited: ${role.name} for ${service.title}`,
-    body: formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a"),
+    body: serviceDate,
     link: "/my-schedule",
   });
+
+  const acceptUrl = `${siteUrl()}/respond/${positionId}?action=accept`;
+  const declineUrl = `${siteUrl()}/respond/${positionId}?action=decline`;
 
   const { data: emailEnabled } = await supabase.rpc("get_email_preference", {
     p_user_id: position.user_id,
@@ -131,12 +139,22 @@ async function dispatchInvite(positionId: string) {
       orgName,
       volunteerName: volunteer.name || volunteer.email,
       serviceTitle: service.title,
-      serviceDate: formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a"),
+      serviceDate,
       roleName: role.name,
-      acceptUrl: `${siteUrl()}/respond/${positionId}?action=accept`,
-      declineUrl: `${siteUrl()}/respond/${positionId}?action=decline`,
+      acceptUrl,
+      declineUrl,
     });
     await sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
+  }
+
+  if (volunteer.phone && (await getSmsRemindersEnabled())) {
+    const smsText = await renderNamedSmsTemplate(service.org_id, "invite", {
+      role: role.name,
+      service: service.title,
+      when: serviceDate,
+      respondUrl: acceptUrl,
+    });
+    await sendSms(volunteer.phone, smsText);
   }
 
   void profile;

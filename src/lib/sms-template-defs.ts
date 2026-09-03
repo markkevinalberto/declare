@@ -4,7 +4,7 @@
 // a live preview while editing — mirrors the same pattern jcsgo-room-booking
 // uses for its own SMS templates.
 
-export type TemplateKey = "reminder_pending" | "reminder_confirmed";
+export type TemplateKey = "invite" | "reminder_pending" | "reminder_confirmed";
 
 export type TemplateVarDef = { name: string; label: string; sample: string };
 
@@ -15,15 +15,33 @@ export type TemplateDef = {
   default: string;
 };
 
-const reminderVars: TemplateVarDef[] = [
+const respondUrlVar: TemplateVarDef = {
+  name: "respondUrl",
+  label: "Link to respond or view details",
+  sample: "https://declare-cyan.vercel.app/respond/…",
+};
+
+const inviteVars: TemplateVarDef[] = [
   { name: "role", label: "Role name", sample: "Vocalist" },
   { name: "service", label: "Service title", sample: "Sunday Worship" },
   { name: "when", label: "Date & time", sample: "Sunday, September 6, 2026 · 9:00 AM" },
+  respondUrlVar,
+];
+
+const reminderVars: TemplateVarDef[] = [
+  ...inviteVars.slice(0, 3),
   { name: "daysAway", label: "Days until the service", sample: "3" },
-  { name: "respondUrl", label: "Link to respond or view details", sample: "https://declare-cyan.vercel.app/respond/…" },
+  respondUrlVar,
 ];
 
 export const TEMPLATE_DEFS: Record<TemplateKey, TemplateDef> = {
+  invite: {
+    title: "New invite (and resend)",
+    description: "Sent the first time a scheduler invites you to a role, and again every time they hit Resend.",
+    vars: inviteVars,
+    default:
+      "📣 You're Invited to Serve\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n\n👉 Accept or decline: {{respondUrl}}",
+  },
   reminder_pending: {
     title: "Reminder — hasn't responded yet",
     description: "Sent to a volunteer who was invited but hasn't accepted or declined yet.",
