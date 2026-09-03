@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { MessageSquareText } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -5,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { OrgForm } from "./org-form";
@@ -76,6 +79,21 @@ export default async function SettingsPage() {
         <CardContent className="grid gap-6">
           <InviteForm />
           <InvitesList invites={invites ?? []} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>SMS message templates</CardTitle>
+          <CardDescription>
+            Customize the wording — and emoji — of the automatic reminder
+            texts sent to your team&apos;s mobile numbers.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" nativeButton={false} render={<Link href="/settings/sms-templates" />}>
+            <MessageSquareText /> Edit templates
+          </Button>
         </CardContent>
       </Card>
 

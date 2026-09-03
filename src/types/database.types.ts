@@ -664,6 +664,39 @@ export interface Database {
           }
         ];
       };
+      sms_templates: {
+        Row: {
+          org_id: string;
+          key: string;
+          template: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          org_id: string;
+          key: string;
+          template: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["sms_templates"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "sms_templates_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sms_templates_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {

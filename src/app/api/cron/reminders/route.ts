@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { reminderEmail } from "@/lib/email/templates";
 import { formatInOrgTime, toOrgTime } from "@/lib/org-time";
+import { sendSms } from "@/lib/sms";
+import { renderNamedSmsTemplate } from "@/lib/sms-templates";
 
 function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -52,7 +54,7 @@ async function sendRemindersForWindow(
 
     const { data: positions } = await admin
       .from("positions")
-      .select("id, status, user_id, roles(name), profiles!positions_user_id_fkey(name, email)")
+      .select("id, status, user_id, roles(name), profiles!positions_user_id_fkey(name, email, phone)")
       .eq("service_id", service.id)
       .in("status", ["invited", "accepted"]);
 
@@ -69,6 +71,7 @@ async function sendRemindersForWindow(
       const volunteer = position.profiles as unknown as {
         name: string;
         email: string;
+        phone: string | null;
       } | null;
       if (!role || !volunteer) continue;
 
@@ -79,22 +82,40 @@ async function sendRemindersForWindow(
         .eq("category", "reminder")
         .maybeSingle();
 
+      const serviceDate = formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a");
+      const respondUrl =
+        position.status === "invited"
+          ? `${siteUrl()}/respond/${position.id}`
+          : `${siteUrl()}/my-schedule`;
+
       if (pref?.email_enabled !== false) {
         const orgName = org?.name ?? "your church";
         const { subject, html } = reminderEmail({
           orgName,
           volunteerName: volunteer.name || volunteer.email,
           serviceTitle: service.title,
-          serviceDate: formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a"),
+          serviceDate,
           roleName: role.name,
           daysAway: daysFromNow,
           status: position.status as "invited" | "accepted",
-          respondUrl:
-            position.status === "invited"
-              ? `${siteUrl()}/respond/${position.id}`
-              : `${siteUrl()}/my-schedule`,
+          respondUrl,
         });
         await sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
+      }
+
+      if (volunteer.phone) {
+        const smsText = await renderNamedSmsTemplate(
+          service.org_id,
+          position.status === "invited" ? "reminder_pending" : "reminder_confirmed",
+          {
+            role: role.name,
+            service: service.title,
+            when: serviceDate,
+            daysAway: String(daysFromNow),
+            respondUrl,
+          }
+        );
+        await sendSms(volunteer.phone, smsText);
       }
 
       await admin.from("notifications").insert({

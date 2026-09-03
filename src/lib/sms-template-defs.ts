@@ -1,0 +1,62 @@
+// Definitions for every customizable SMS template: its default wording and
+// the {{variable}} placeholders it can use. Kept dependency-free (no
+// Supabase import) so it's safe to use from client components too, e.g. for
+// a live preview while editing — mirrors the same pattern jcsgo-room-booking
+// uses for its own SMS templates.
+
+export type TemplateKey = "reminder_pending" | "reminder_confirmed";
+
+export type TemplateVarDef = { name: string; label: string; sample: string };
+
+export type TemplateDef = {
+  title: string;
+  description: string;
+  vars: TemplateVarDef[];
+  default: string;
+};
+
+const reminderVars: TemplateVarDef[] = [
+  { name: "role", label: "Role name", sample: "Vocalist" },
+  { name: "service", label: "Service title", sample: "Sunday Worship" },
+  { name: "when", label: "Date & time", sample: "Sunday, September 6, 2026 · 9:00 AM" },
+  { name: "daysAway", label: "Days until the service", sample: "3" },
+  { name: "respondUrl", label: "Link to respond or view details", sample: "https://declare-cyan.vercel.app/respond/…" },
+];
+
+export const TEMPLATE_DEFS: Record<TemplateKey, TemplateDef> = {
+  reminder_pending: {
+    title: "Reminder — hasn't responded yet",
+    description: "Sent to a volunteer who was invited but hasn't accepted or declined yet.",
+    vars: reminderVars,
+    default:
+      "🔔 Reminder: Please Respond\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n⏳ {{daysAway}} day(s) away — you haven't responded yet.\n\n👉 Respond: {{respondUrl}}",
+  },
+  reminder_confirmed: {
+    title: "Reminder — already confirmed",
+    description: "Sent to a volunteer who already accepted, as a heads-up before the service.",
+    vars: reminderVars,
+    default:
+      "✅ Reminder: You're Serving\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n⏳ {{daysAway}} day(s) away.\n\nℹ️ Details: {{respondUrl}}",
+  },
+};
+
+export const TEMPLATE_KEYS = Object.keys(TEMPLATE_DEFS) as TemplateKey[];
+
+// A line referencing a variable that's empty/missing is dropped entirely —
+// that's how an optional field would stay out of the message instead of
+// leaving a dangling "Label: " with nothing after it. A line with no
+// {{...}} reference (blank spacer lines included) always passes through.
+export function renderSmsTemplate(
+  template: string,
+  vars: Record<string, string | null | undefined>
+): string {
+  const lines = template.split("\n");
+  const rendered = lines
+    .map((line) => {
+      const refs = [...line.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]);
+      if (refs.length > 0 && refs.some((r) => !vars[r])) return null;
+      return line.replace(/\{\{(\w+)\}\}/g, (_, name: string) => vars[name] ?? "");
+    })
+    .filter((l): l is string => l !== null);
+  return rendered.join("\n");
+}
