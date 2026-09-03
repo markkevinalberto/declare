@@ -15,9 +15,15 @@ export type TemplateDef = {
   default: string;
 };
 
+// Available if you want it, but PH carriers/phones commonly filter texts
+// containing links as spam/smishing — confirmed via a live test where an
+// identical message arrived instantly with the link removed and never
+// arrived with it included. The built-in defaults below deliberately don't
+// use this variable; add it back only if you've verified links get through
+// on your recipients' carriers.
 const respondUrlVar: TemplateVarDef = {
   name: "respondUrl",
-  label: "Link to respond or view details",
+  label: "Link to respond or view details (⚠️ often filtered as spam by PH carriers)",
   sample: "https://declare-cyan.vercel.app/respond/…",
 };
 
@@ -40,21 +46,21 @@ export const TEMPLATE_DEFS: Record<TemplateKey, TemplateDef> = {
     description: "Sent the first time a scheduler invites you to a role, and again every time they hit Resend.",
     vars: inviteVars,
     default:
-      "📣 You're Invited to Serve\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n\n👉 Accept or decline: {{respondUrl}}",
+      "📣 You're Invited to Serve\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n\n👉 Open Declare to accept or decline.",
   },
   reminder_pending: {
     title: "Reminder — hasn't responded yet",
     description: "Sent to a volunteer who was invited but hasn't accepted or declined yet.",
     vars: reminderVars,
     default:
-      "🔔 Reminder: Please Respond\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n⏳ {{daysAway}} day(s) away — you haven't responded yet.\n\n👉 Respond: {{respondUrl}}",
+      "🔔 Reminder: Please Respond\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n⏳ {{daysAway}} day(s) away — you haven't responded yet.\n\n👉 Open Declare to respond.",
   },
   reminder_confirmed: {
     title: "Reminder — already confirmed",
     description: "Sent to a volunteer who already accepted, as a heads-up before the service.",
     vars: reminderVars,
     default:
-      "✅ Reminder: You're Serving\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n⏳ {{daysAway}} day(s) away.\n\nℹ️ Details: {{respondUrl}}",
+      "✅ Reminder: You're Serving\n\n⛪ Role: {{role}}\n📌 Service: {{service}}\n🕒 When: {{when}}\n⏳ {{daysAway}} day(s) away.\n\nℹ️ Open Declare for details.",
   },
 };
 
