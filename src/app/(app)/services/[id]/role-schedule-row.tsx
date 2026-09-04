@@ -223,6 +223,7 @@ export function RoleScheduleRow({
                     className="text-muted-foreground hover:text-destructive"
                     disabled={pending}
                     onClick={() => handleDelete(position.id)}
+                    aria-label={`Remove ${position.profiles?.name ?? position.profiles?.email ?? "this person"}`}
                   >
                     <Trash2 />
                   </Button>

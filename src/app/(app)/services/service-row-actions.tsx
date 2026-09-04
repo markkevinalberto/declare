@@ -32,7 +32,7 @@ export function ServiceRowActions({
     <div className="shrink-0">
       <AlertDialog>
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="More actions" />}>
             <MoreVertical />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

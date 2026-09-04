@@ -204,7 +204,12 @@ export function SongsView({
                       size="icon-sm"
                       nativeButton={false}
                       render={
-                        <a href={song.youtube_url} target="_blank" rel="noreferrer" />
+                        <a
+                          href={song.youtube_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open "${song.title}" on YouTube`}
+                        />
                       }
                     >
                       <ExternalLink />

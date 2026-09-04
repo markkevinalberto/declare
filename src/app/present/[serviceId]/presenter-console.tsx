@@ -524,7 +524,7 @@ function BibleVerseEditDialog({
         if (next) setText(initialText);
       }}
     >
-      <DialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
+      <DialogTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Edit ${title}`} />}>
         <Pencil />
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
@@ -641,7 +641,7 @@ function ContentSlideEditDialog({
         if (next) editor?.commands.setContent(ensureRichHtml(initialText));
       }}
     >
-      <DialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
+      <DialogTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Edit content slide" />}>
         <Pencil />
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
@@ -773,7 +773,7 @@ function MediaEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
+      <DialogTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Edit ${title}`} />}>
         <Pencil />
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">

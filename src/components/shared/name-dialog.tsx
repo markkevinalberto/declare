@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { cloneElement, useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +26,7 @@ export function NameDialog({
   action,
   submitLabel = "Save",
 }: {
-  triggerRender: React.ReactElement;
+  triggerRender: React.ReactElement<{ "aria-label"?: string }>;
   triggerContent: React.ReactNode;
   title: string;
   description?: string;
@@ -48,9 +48,17 @@ export function NameDialog({
     return result;
   }, undefined);
 
+  // The trigger is almost always an icon-only button (a pencil glyph with
+  // no visible text) — without an accessible name a screen reader announces
+  // nothing useful for it. `title` already describes what the dialog does
+  // ("Rename role"), so reuse it here unless the caller set their own.
+  const accessibleTrigger = cloneElement(triggerRender, {
+    "aria-label": triggerRender.props["aria-label"] ?? title,
+  });
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={triggerRender}>{triggerContent}</DialogTrigger>
+      <DialogTrigger render={accessibleTrigger}>{triggerContent}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

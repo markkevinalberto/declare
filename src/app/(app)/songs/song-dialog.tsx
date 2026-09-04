@@ -71,7 +71,7 @@ export function SongDialog({
       }}
     >
       {editing ? (
-        <DialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
+        <DialogTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Edit song" />}>
           <Pencil />
         </DialogTrigger>
       ) : (

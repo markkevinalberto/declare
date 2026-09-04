@@ -58,11 +58,11 @@ export function CalendarGrid<T>({
     <Card>
       <CardContent className="p-3">
         <div className="mb-2 flex items-center justify-between">
-          <Button variant="ghost" size="icon-sm" onClick={() => setMonth((m) => subMonths(m, 1))}>
+          <Button variant="ghost" size="icon-sm" onClick={() => setMonth((m) => subMonths(m, 1))} aria-label="Previous month">
             <ChevronLeft />
           </Button>
           <p className="text-sm font-medium">{format(month, "MMMM yyyy")}</p>
-          <Button variant="ghost" size="icon-sm" onClick={() => setMonth((m) => addMonths(m, 1))}>
+          <Button variant="ghost" size="icon-sm" onClick={() => setMonth((m) => addMonths(m, 1))} aria-label="Next month">
             <ChevronRight />
           </Button>
         </div>

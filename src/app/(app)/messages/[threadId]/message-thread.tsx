@@ -129,7 +129,7 @@ export function MessageThread({
   return (
     <div className="grid h-[calc(100svh-8rem)] max-w-xl grid-rows-[auto_1fr_auto] gap-3">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon-sm" nativeButton={false} render={<Link href="/messages" />}>
+        <Button variant="ghost" size="icon-sm" nativeButton={false} render={<Link href="/messages" aria-label="Back to messages" />}>
           <ArrowLeft />
         </Button>
         <h1 className="text-lg font-semibold">{title}</h1>
@@ -191,7 +191,7 @@ export function MessageThread({
           rows={2}
           className="flex-1"
         />
-        <Button onClick={handleSend} disabled={pending || !body.trim()} size="icon">
+        <Button onClick={handleSend} disabled={pending || !body.trim()} size="icon" aria-label="Send message">
           <Send />
         </Button>
       </div>

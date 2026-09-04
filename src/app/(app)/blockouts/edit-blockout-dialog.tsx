@@ -40,7 +40,7 @@ export function EditBlockoutDialog({ blockout }: { blockout: Blockout }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
+      <DialogTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Edit blockout" />}>
         <Pencil />
       </DialogTrigger>
       <DialogContent>

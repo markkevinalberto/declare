@@ -99,7 +99,7 @@ export function PersonEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
+      <DialogTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Edit ${person.name || person.email}`} />}>
         <Pencil />
       </DialogTrigger>
       <DialogContent>
