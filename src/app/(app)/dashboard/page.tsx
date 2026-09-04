@@ -34,8 +34,8 @@ function EmptyState({ icon: Icon, message }: { icon: typeof CalendarDays; messag
 
 function CardIcon({ icon: Icon }: { icon: typeof CalendarDays }) {
   return (
-    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-      <Icon className="size-4" />
+    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-chart-2 shadow-sm shadow-primary/25">
+      <Icon className="size-4.5 text-primary-foreground" />
     </span>
   );
 }
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
         </div>
 
         {pendingInvites.length > 0 ? (
-          <Card>
+          <Card className="animate-fade-up">
             <CardHeader>
               <CardTitle className="flex items-center gap-2.5">
                 <CardIcon icon={Inbox} /> Invites awaiting your response
@@ -98,7 +98,7 @@ export default async function DashboardPage() {
                 <Link
                   key={p.id}
                   href={`/respond/${p.id}`}
-                  className="flex items-center justify-between rounded-md border p-3 text-sm hover:bg-accent"
+                  className="flex items-center justify-between rounded-md border p-3 text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
                 >
                   <span>
                     <span className="font-medium">{p.roles?.name}</span> for {p.services!.title}
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
           </Card>
         ) : null}
 
-        <Card>
+        <Card className="animate-fade-up [animation-delay:80ms]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2.5">
               <CardIcon icon={CalendarDays} /> Your upcoming commitments
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
                   <Link
                     key={p.id}
                     href={`/services/${p.service_id}`}
-                    className="flex items-center justify-between rounded-md border p-3 text-sm hover:bg-accent"
+                    className="flex items-center justify-between rounded-md border p-3 text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
                   >
                     <span>
                       <span className="font-medium">{p.roles?.name}</span> for {p.services!.title}
@@ -182,7 +182,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card className="animate-fade-up">
           <CardHeader>
             <CardTitle className="flex items-center gap-2.5">
               <CardIcon icon={CalendarDays} /> Next services
@@ -200,7 +200,7 @@ export default async function DashboardPage() {
                     <Link
                       key={s.id}
                       href={`/services/${s.id}`}
-                      className="flex items-center justify-between rounded-md border p-3 text-sm hover:bg-accent"
+                      className="flex items-center justify-between rounded-md border p-3 text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
                     >
                       <span className="flex flex-col">
                         <span className="font-medium">{s.title}</span>
@@ -222,7 +222,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-fade-up [animation-delay:80ms]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2.5">
               <CardIcon icon={UserX} /> Unfilled positions
@@ -238,7 +238,7 @@ export default async function DashboardPage() {
                   <Link
                     key={`${u.service.id}-${u.role.id}-${i}`}
                     href={`/services/${u.service.id}`}
-                    className="flex items-center justify-between rounded-md border p-3 text-sm hover:bg-accent"
+                    className="flex items-center justify-between rounded-md border p-3 text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
                   >
                     <span>
                       <span className="font-medium">{u.role.name}</span> for {u.service.title}
@@ -253,7 +253,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
+        <Card className="animate-fade-up md:col-span-2 [animation-delay:160ms]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2.5">
               <CardIcon icon={Inbox} /> Pending responses
@@ -269,7 +269,7 @@ export default async function DashboardPage() {
                   <Link
                     key={p.id}
                     href={`/services/${p.service_id}`}
-                    className="flex items-center justify-between rounded-md border p-3 text-sm hover:bg-accent"
+                    className="flex items-center justify-between rounded-md border p-3 text-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent hover:shadow-sm"
                   >
                     <span>
                       <span className="font-medium">{p.profiles?.name}</span> — {p.roles?.name} for{" "}

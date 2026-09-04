@@ -1,17 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
-import {
-  CalendarDays,
-  Download,
-  Monitor,
-  MonitorPlay,
-  Users,
-  Users2,
-} from "lucide-react";
+import { CalendarDays, Download, Monitor, MonitorPlay, Users, Users2 } from "lucide-react";
 import { DeclareMark } from "@/components/brand/declare-mark";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FEATURES as FEATURE_FLAGS } from "@/lib/features";
+import { LandingHeroVisual } from "./landing-hero-visual";
+import { LandingMarquee } from "./landing-marquee";
+import { LandingFeatureShowcase, type ShowcaseFeature } from "./landing-feature-showcase";
+import { LandingBuiltFor } from "./landing-built-for";
 
 // Windows installer — hosted as a GitHub release rather than bundled into
 // the Vercel deployment (it's ~80MB, and the app icon/screenshots already
@@ -20,20 +16,9 @@ import { FEATURES as FEATURE_FLAGS } from "@/lib/features";
 const DESKTOP_DOWNLOAD_URL =
   "https://github.com/markkevinalberto/declare/releases/download/v0.1.0/Declare-Setup-0.1.0.exe";
 
-type Feature = {
-  icon: typeof CalendarDays;
-  eyebrow: string;
-  title: string;
-  description: string;
-  image: string;
-  imageAlt: string;
-  /** Omit for features shown regardless of feature-flag state. */
-  requires?: "planning" | "presenter";
-};
-
-const ALL_FEATURES: Feature[] = [
+const ALL_FEATURES: (ShowcaseFeature & { requires?: "planning" | "presenter" })[] = [
   {
-    icon: CalendarDays,
+    icon: <CalendarDays className="size-5 text-primary-foreground" />,
     eyebrow: "Service planning",
     title: "Build the whole service flow in minutes",
     description:
@@ -43,7 +28,7 @@ const ALL_FEATURES: Feature[] = [
     requires: "planning",
   },
   {
-    icon: Users,
+    icon: <Users className="size-5 text-primary-foreground" />,
     eyebrow: "Volunteer scheduling",
     title: "Invite volunteers, let them accept or decline",
     description:
@@ -52,7 +37,7 @@ const ALL_FEATURES: Feature[] = [
     imageAlt: "Dashboard showing upcoming services, unfilled positions, and pending volunteer responses",
   },
   {
-    icon: MonitorPlay,
+    icon: <MonitorPlay className="size-5 text-primary-foreground" />,
     eyebrow: "Live presenter console",
     title: "Run the whole service from one screen",
     description:
@@ -62,7 +47,7 @@ const ALL_FEATURES: Feature[] = [
     requires: "presenter",
   },
   {
-    icon: Users2,
+    icon: <Users2 className="size-5 text-primary-foreground" />,
     eyebrow: "Team & roles",
     title: "One roster for your entire volunteer team",
     description:
@@ -72,144 +57,85 @@ const ALL_FEATURES: Feature[] = [
   },
 ];
 
-const FEATURES = ALL_FEATURES.filter(
-  (f) => !f.requires || FEATURE_FLAGS[f.requires]
-);
-
-function ScreenshotFrame({
-  src,
-  alt,
-  priority,
-}: {
-  src: string;
-  alt: string;
-  priority?: boolean;
-}) {
-  return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-2xl shadow-primary/10 ring-1 ring-foreground/5">
-      <div className="flex items-center gap-1.5 border-b bg-muted/40 px-3 py-2">
-        <span className="size-2.5 rounded-full bg-destructive/40" />
-        <span className="size-2.5 rounded-full bg-chart-3/50" />
-        <span className="size-2.5 rounded-full bg-chart-2/50" />
-      </div>
-      <Image
-        src={src}
-        alt={alt}
-        width={1400}
-        height={875}
-        priority={priority}
-        className="w-full"
-      />
-    </div>
-  );
-}
+const FEATURES = ALL_FEATURES.filter((f) => !f.requires || FEATURE_FLAGS[f.requires]);
 
 export function LandingPage() {
   return (
-    <div className="min-h-svh bg-background">
-      <header className="border-b bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-chart-2 shadow-md shadow-primary/25">
-              <DeclareMark className="size-4.5 text-primary-foreground" />
-            </span>
-            <span className="text-lg font-semibold tracking-tight">Declare</span>
-          </div>
-          <nav className="flex items-center gap-2">
-            {FEATURE_FLAGS.presenter ? (
-              <a
-                href="#desktop-app"
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  "hidden sm:inline-flex"
-                )}
-              >
-                <Monitor /> Desktop app
-              </a>
-            ) : null}
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
-            >
-              Sign in
-            </Link>
-            <Link href="/signup" className={buttonVariants({ size: "sm" })}>
-              Get started free
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-svh overflow-x-hidden bg-background">
+      <div className="sticky top-4 z-50 mx-auto flex max-w-fit items-center gap-1 rounded-full border bg-card/80 px-2 py-1.5 shadow-lg shadow-foreground/5 backdrop-blur-md">
+        <Link href="/" className="flex items-center gap-2 pr-2 pl-1.5">
+          <span className="flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-chart-2">
+            <DeclareMark className="size-3.5 text-primary-foreground" />
+          </span>
+          <span className="text-sm font-semibold tracking-tight">Declare</span>
+        </Link>
+        {FEATURE_FLAGS.presenter ? (
+          <a
+            href="#desktop-app"
+            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden rounded-full sm:inline-flex")}
+          >
+            <Monitor /> Desktop
+          </a>
+        ) : null}
+        <Link href="/login" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "rounded-full")}>
+          Sign in
+        </Link>
+        <Link href="/signup" className={cn(buttonVariants({ size: "sm" }), "rounded-full")}>
+          Get started
+        </Link>
+      </div>
 
       <main>
-        <section className="mx-auto max-w-6xl px-6 pt-16 pb-12 text-center sm:pt-24">
-          <h1 className="mx-auto max-w-3xl font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-            Schedule volunteers and run your church team —
-            <span className="text-primary"> all in one place</span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground text-balance">
-            Declare is the church operating system for teams that schedule
-            volunteers and manage their roster — built to replace the
-            spreadsheet and the group chat.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/signup" className={buttonVariants({ size: "lg" })}>
-              Get started free
-            </Link>
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "outline", size: "lg" })}
-            >
-              Sign in
-            </Link>
+        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pt-20 pb-8 sm:pt-28 lg:grid-cols-2 lg:gap-8">
+          <div>
+            <h1 className="max-w-2xl font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+              Run your church{" "}
+              <span
+                className="mx-0.5 inline-flex size-8 shrink-0 translate-y-1 items-center justify-center rounded-full bg-gradient-to-br from-primary to-chart-2 align-middle sm:size-10"
+                aria-hidden="true"
+              >
+                <DeclareMark className="size-4.5 text-primary-foreground sm:size-5.5" />
+              </span>{" "}
+              without the spreadsheet
+            </h1>
+            <p className="mt-6 max-w-lg text-lg text-muted-foreground text-balance">
+              Declare schedules volunteers, tracks who&apos;s accepted, and reminds
+              everyone who hasn&apos;t — so Sunday morning isn&apos;t the first time you
+              find out a role is empty.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/signup" className={buttonVariants({ size: "lg" })}>
+                Get started free
+              </Link>
+              <Link href="/login" className={buttonVariants({ variant: "outline", size: "lg" })}>
+                Sign in
+              </Link>
+            </div>
           </div>
 
-          <div className="mx-auto mt-16 max-w-5xl">
-            <ScreenshotFrame
-              src="/marketing/dashboard.png"
-              alt="The Declare dashboard, showing upcoming services, unfilled positions, and pending volunteer responses"
-              priority
-            />
-          </div>
+          <LandingHeroVisual
+            src="/marketing/dashboard.png"
+            alt="The Declare dashboard, showing upcoming services, unfilled positions, and pending volunteer responses"
+          />
         </section>
 
-        <section className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
-          <div className="grid gap-20 sm:gap-28">
-            {FEATURES.map((feature, i) => {
-              const Icon = feature.icon;
-              const reversed = i % 2 === 1;
-              return (
-                <div
-                  key={feature.title}
-                  className={cn(
-                    "grid items-center gap-10 sm:grid-cols-2 sm:gap-16",
-                    reversed && "sm:[&>*:first-child]:order-2"
-                  )}
-                >
-                  <ScreenshotFrame src={feature.image} alt={feature.imageAlt} />
-                  <div>
-                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                      <Icon className="size-4" />
-                      {feature.eyebrow}
-                    </div>
-                    <h2 className="mt-2 font-heading text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-                      {feature.title}
-                    </h2>
-                    <p className="mt-3 text-muted-foreground text-balance">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+        <div className="mt-16">
+          <LandingMarquee />
+        </div>
+
+        <section className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+          <LandingFeatureShowcase features={FEATURES} />
+        </section>
+
+        <section className="border-t bg-card/40 py-24 sm:py-32">
+          <div className="mx-auto max-w-5xl px-6">
+            <LandingBuiltFor />
           </div>
         </section>
 
         {FEATURE_FLAGS.presenter ? (
-          <section
-            id="desktop-app"
-            className="scroll-mt-16 border-t bg-[#08121F] text-white"
-          >
-            <div className="mx-auto max-w-3xl px-6 py-20 text-center sm:py-24">
+          <section id="desktop-app" className="scroll-mt-16 border-t bg-[#08121F] text-white">
+            <div className="mx-auto max-w-3xl px-6 py-24 text-center sm:py-28">
               <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/40">
                 <Monitor className="size-7 text-primary-foreground" />
               </div>
@@ -227,29 +153,22 @@ export function LandingPage() {
                 tab.
               </p>
               <div className="mt-8">
-                <a
-                  href={DESKTOP_DOWNLOAD_URL}
-                  className={buttonVariants({ size: "lg" })}
-                >
+                <a href={DESKTOP_DOWNLOAD_URL} className={buttonVariants({ size: "lg" })}>
                   <Download /> Download for Windows
                 </a>
               </div>
-              <p className="mt-4 text-xs text-white/50">
-                Free · Windows 10/11 · v0.1.0
-              </p>
+              <p className="mt-4 text-xs text-white/50">Free · Windows 10/11 · v0.1.0</p>
             </div>
           </section>
         ) : null}
 
         <section className="border-t bg-muted/30">
-          <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-            <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance">
+          <div className="mx-auto max-w-3xl px-6 py-24 text-center sm:py-28">
+            <h2 className="font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
               Ready to run your next service with Declare?
             </h2>
-            <p className="mt-3 text-muted-foreground">
-              Free to get started — no credit card required.
-            </p>
-            <div className="mt-7">
+            <p className="mt-3 text-muted-foreground">Free to get started — no credit card required.</p>
+            <div className="mt-8">
               <Button size="lg" nativeButton={false} render={<Link href="/signup" />}>
                 Get started free
               </Button>

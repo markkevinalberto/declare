@@ -29,6 +29,8 @@
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  --color-warm-foreground: var(--warm-foreground);
+  --color-warm: var(--warm);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -48,27 +50,32 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Declare brand palette — royal blue #245BFF (primary/logo), dark navy
-   #08121F (ink, dark-mode base), cyan #30D5FF and gold #D4AF37 (chart
-   accents), cool blue-gray #7A8BA6 / #E4E9F1 (muted text / borders). */
+/* Declare brand palette v2 — royal blue #245BFF stays the primary/logo
+   color, but the canvas moved off stark white to a soft mid-light
+   blue-gray so cards read as a distinct, lifted layer instead of
+   blending into the page (a deliberately "not dark, not bright" base
+   with a warm amber secondary accent for richness). Dark navy #08121F
+   lineage, cyan #30D5FF and gold #D4AF37 chart accents carry over. */
 :root {
-  --background: oklch(0.995 0.002 260);
-  --foreground: oklch(0.2 0.02 255);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 255);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 255);
+  --background: oklch(0.955 0.012 252);
+  --foreground: oklch(0.22 0.025 255);
+  --card: oklch(0.99 0.004 260);
+  --card-foreground: oklch(0.22 0.025 255);
+  --popover: oklch(0.99 0.004 260);
+  --popover-foreground: oklch(0.22 0.025 255);
   --primary: oklch(0.549 0.249 264.6);
   --primary-foreground: oklch(0.985 0.005 260);
-  --secondary: oklch(0.965 0.006 260);
-  --secondary-foreground: oklch(0.25 0.03 260);
-  --muted: oklch(0.965 0.006 260);
-  --muted-foreground: oklch(0.633 0.045 259.6);
-  --accent: oklch(0.93 0.02 264.6);
+  --secondary: oklch(0.91 0.014 255);
+  --secondary-foreground: oklch(0.27 0.03 260);
+  --muted: oklch(0.91 0.014 255);
+  --muted-foreground: oklch(0.53 0.04 259.6);
+  --accent: oklch(0.9 0.025 264.6);
   --accent-foreground: oklch(0.35 0.15 264.6);
+  --warm: oklch(0.79 0.13 75);
+  --warm-foreground: oklch(0.28 0.06 70);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.933 0.012 259.8);
-  --input: oklch(0.933 0.012 259.8);
+  --border: oklch(0.885 0.016 258);
+  --input: oklch(0.885 0.016 258);
   --ring: oklch(0.62 0.18 264.6);
   --chart-1: oklch(0.549 0.249 264.6);
   --chart-2: oklch(0.811 0.139 220.3);
@@ -76,31 +83,33 @@
   --chart-4: oklch(0.6 0.12 320);
   --chart-5: oklch(0.35 0.02 260);
   --radius: 0;
-  --sidebar: oklch(0.98 0.006 260);
-  --sidebar-foreground: oklch(0.2 0.02 255);
+  --sidebar: oklch(0.935 0.014 255);
+  --sidebar-foreground: oklch(0.22 0.025 255);
   --sidebar-primary: oklch(0.549 0.249 264.6);
   --sidebar-primary-foreground: oklch(0.985 0.005 260);
-  --sidebar-accent: oklch(0.93 0.02 264.6);
+  --sidebar-accent: oklch(0.9 0.025 264.6);
   --sidebar-accent-foreground: oklch(0.35 0.15 264.6);
-  --sidebar-border: oklch(0.933 0.012 259.8);
+  --sidebar-border: oklch(0.885 0.016 258);
   --sidebar-ring: oklch(0.62 0.18 264.6);
 }
 
 .dark {
-  --background: oklch(0.18 0.031 255.2);
-  --foreground: oklch(0.97 0.006 260);
-  --card: oklch(0.23 0.028 255);
-  --card-foreground: oklch(0.97 0.006 260);
-  --popover: oklch(0.23 0.028 255);
-  --popover-foreground: oklch(0.97 0.006 260);
+  --background: oklch(0.225 0.028 255.2);
+  --foreground: oklch(0.96 0.006 260);
+  --card: oklch(0.27 0.026 255);
+  --card-foreground: oklch(0.96 0.006 260);
+  --popover: oklch(0.27 0.026 255);
+  --popover-foreground: oklch(0.96 0.006 260);
   --primary: oklch(0.66 0.2 264.6);
   --primary-foreground: oklch(0.985 0.005 260);
-  --secondary: oklch(0.27 0.02 255);
-  --secondary-foreground: oklch(0.97 0.006 260);
-  --muted: oklch(0.27 0.02 255);
-  --muted-foreground: oklch(0.7 0.035 259.6);
-  --accent: oklch(0.3 0.06 264.6);
+  --secondary: oklch(0.31 0.02 255);
+  --secondary-foreground: oklch(0.96 0.006 260);
+  --muted: oklch(0.31 0.02 255);
+  --muted-foreground: oklch(0.72 0.035 259.6);
+  --accent: oklch(0.34 0.06 264.6);
   --accent-foreground: oklch(0.85 0.08 264.6);
+  --warm: oklch(0.74 0.14 70);
+  --warm-foreground: oklch(0.2 0.05 65);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -151,6 +160,41 @@
     letter-spacing: -0.015em;
   }
 }
+/* Gentle entrance for dashboard/list cards — staggered via inline
+   animation-delay on each card so a page of content settles in rather
+   than popping in all at once. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Continuous horizontal strip (marketing marquee) — duplicate the
+   content once and translate exactly -50% so the loop seam is
+   invisible. Pauses on hover so a reader can actually read an item. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Scrolling announcement ticker on the projector / stage display. Distance
    uses container units so it works in the tiny confidence monitor too —
    every screen that shows it sets container-type on its root. */
