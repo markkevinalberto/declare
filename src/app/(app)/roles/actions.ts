@@ -127,6 +127,36 @@ export async function deleteRole(roleId: string) {
   revalidatePath("/roles");
 }
 
+export async function reorderRoleGroups(orderedIds: string[]) {
+  const profile = await requireAdmin();
+  const supabase = await createClient();
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase
+        .from("role_groups")
+        .update({ sort_order: index })
+        .eq("id", id)
+        .eq("org_id", profile.org_id)
+    )
+  );
+  revalidatePath("/roles");
+}
+
+export async function reorderRoles(orderedIds: string[]) {
+  const profile = await requireAdmin();
+  const supabase = await createClient();
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase
+        .from("roles")
+        .update({ sort_order: index })
+        .eq("id", id)
+        .eq("org_id", profile.org_id)
+    )
+  );
+  revalidatePath("/roles");
+}
+
 export async function setRoleMembers(roleId: string, userIds: string[]) {
   const profile = await requireAdmin();
   const supabase = await createClient();
