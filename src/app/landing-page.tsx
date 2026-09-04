@@ -41,7 +41,7 @@ const ALL_FEATURES: (ShowcaseFeature & { requires?: "planning" | "presenter" })[
     eyebrow: "Live presenter console",
     title: "Run the whole service from one screen",
     description:
-      "Drive lyrics, scripture, and announcements to a projector and a separate stage monitor for your team, with countdown timers, a scrolling announcement bar, and full keyboard shortcut control — all from a single console.",
+      "Drive lyrics, scripture, and announcements to a projector and a separate stage monitor for your team, with countdown timers, a scrolling announcement bar, and full keyboard shortcut control, all from a single console.",
     image: "/marketing/presenter.png",
     imageAlt: "Presenter console with a schedule of songs and slides, live confidence monitor, and playback controls",
     requires: "presenter",
@@ -86,9 +86,9 @@ export function LandingPage() {
       </div>
 
       <main>
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pt-20 pb-8 sm:pt-28 lg:grid-cols-2 lg:gap-8">
+        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pt-20 pb-8 sm:pt-24 lg:grid-cols-2 lg:gap-8">
           <div>
-            <h1 className="max-w-2xl font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+            <h1 className="max-w-3xl font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
               Run your church{" "}
               <span
                 className="mx-0.5 inline-flex size-8 shrink-0 translate-y-1 items-center justify-center rounded-full bg-gradient-to-br from-primary to-chart-2 align-middle sm:size-10"
@@ -99,9 +99,9 @@ export function LandingPage() {
               without the spreadsheet
             </h1>
             <p className="mt-6 max-w-lg text-lg text-muted-foreground text-balance">
-              Declare schedules volunteers, tracks who&apos;s accepted, and reminds
-              everyone who hasn&apos;t — so Sunday morning isn&apos;t the first time you
-              find out a role is empty.
+              Declare schedules volunteers, tracks who&apos;s accepted, and
+              reminds anyone who hasn&apos;t, so a role never sits empty until
+              Sunday morning.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link href="/signup" className={buttonVariants({ size: "lg" })}>
@@ -157,22 +157,22 @@ export function LandingPage() {
                   <Download /> Download for Windows
                 </a>
               </div>
-              <p className="mt-4 text-xs text-white/50">Free · Windows 10/11 · v0.1.0</p>
+              <p className="mt-4 text-xs text-white/50">Free for Windows 10 and 11.</p>
             </div>
           </section>
         ) : null}
 
         <section className="border-t bg-muted/30">
-          <div className="mx-auto max-w-3xl px-6 py-24 text-center sm:py-28">
-            <h2 className="font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-              Ready to run your next service with Declare?
-            </h2>
-            <p className="mt-3 text-muted-foreground">Free to get started — no credit card required.</p>
-            <div className="mt-8">
-              <Button size="lg" nativeButton={false} render={<Link href="/signup" />}>
-                Get started free
-              </Button>
+          <div className="mx-auto flex max-w-5xl flex-col items-start gap-6 px-6 py-20 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                Ready to run your next service with Declare?
+              </h2>
+              <p className="mt-2 text-muted-foreground">Free to get started, no credit card required.</p>
             </div>
+            <Button size="lg" nativeButton={false} render={<Link href="/signup" />} className="shrink-0">
+              Get started free
+            </Button>
           </div>
         </section>
       </main>

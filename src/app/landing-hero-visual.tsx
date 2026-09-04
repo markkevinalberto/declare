@@ -9,6 +9,7 @@ export function LandingHeroVisual({ src, alt }: { src: string; alt: string }) {
   const frameRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     gsap.fromTo(
       frameRef.current,
       { opacity: 0, y: 28, scale: 0.94 },

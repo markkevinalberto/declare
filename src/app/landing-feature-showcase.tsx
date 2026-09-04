@@ -30,16 +30,25 @@ export function LandingFeatureShowcase({ features }: { features: ShowcaseFeature
 
   useGSAP(
     () => {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
       // Pin the title/description column for the length of the scrolling
       // image stack on the right, so the reader keeps their place while the
-      // "which feature is this" context stays visible the whole time.
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: "top 96px",
-        end: () => `+=${(containerRef.current?.offsetHeight ?? 0) - (pinRef.current?.offsetHeight ?? 0)}`,
-        pin: pinRef.current,
-      });
+      // "which feature is this" context stays visible the whole time. Skips
+      // entirely under reduced motion — pinning is a motion effect, not just
+      // a layout choice.
+      if (!reduceMotion) {
+        ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: "top 96px",
+          end: () => `+=${(containerRef.current?.offsetHeight ?? 0) - (pinRef.current?.offsetHeight ?? 0)}`,
+          pin: pinRef.current,
+        });
+      }
 
+      // Tracks which feature is nearest to keep the sidebar text in sync —
+      // a discrete state swap, not an animation, so this stays on even
+      // under reduced motion.
       itemRefs.current.forEach((item, i) => {
         if (!item) return;
         ScrollTrigger.create({
@@ -51,9 +60,11 @@ export function LandingFeatureShowcase({ features }: { features: ShowcaseFeature
         });
       });
 
+      if (reduceMotion) return;
+
       // Each screenshot starts small and dim, grows to full size and
       // opacity as it crosses the viewport center, then eases back down as
-      // it leaves — a scroll-scrubbed reveal rather than an on/off toggle.
+      // it leaves, a scroll-scrubbed reveal rather than an on/off toggle.
       imageRefs.current.forEach((image) => {
         if (!image) return;
         gsap.fromTo(

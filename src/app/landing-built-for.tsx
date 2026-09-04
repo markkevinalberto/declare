@@ -13,19 +13,19 @@ const PANELS = [
     icon: ClipboardCheck,
     role: "Schedulers & admins",
     headline: "Stop chasing people down in the group chat",
-    body: "Assign a role, Declare checks blockout dates and conflicts automatically, and sends the invite. You see who's confirmed and who still needs a nudge, at a glance.",
+    body: "Assign a role and Declare checks blockout dates and conflicts, then sends the invite. See who's confirmed and who still needs a nudge, at a glance.",
   },
   {
     icon: HeartHandshake,
     role: "Volunteers",
     headline: "One tap to accept, decline, or see what's next",
-    body: "Get invited by email or text, respond from your phone, and see everything you're serving in one upcoming-schedule view — no spreadsheet link to dig up.",
+    body: "Get invited by email or text and respond from your phone. Everything you're serving shows up in one upcoming-schedule view, no spreadsheet link to dig up.",
   },
   {
     icon: CalendarClock,
     role: "Team & worship leads",
     headline: "Walk into Sunday already knowing who's in the room",
-    body: "See every role for the service filled or flagged days in advance, not the morning of — and message a whole team at once when plans change.",
+    body: "See every role filled or flagged days in advance, not the morning of, and message a whole team at once when plans change.",
   },
 ] as const;
 
