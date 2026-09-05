@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarNav } from "./sidebar-nav";
 import { NotificationBell } from "./notification-bell";
+import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { primaryNav, settingsNav } from "./nav-config";
 
@@ -92,7 +93,8 @@ export function AppShell({
                 — this is a static wayfinding label, not the document heading. */}
             <span className="truncate text-sm font-semibold">{pageTitle}</span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <NotificationBell unreadCount={unreadCount} />
             <UserMenu
               name={userName}
