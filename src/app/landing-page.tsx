@@ -185,7 +185,12 @@ export function LandingPage() {
             </span>
             <span className="font-medium text-foreground">Declare</span>
           </div>
-          <p>&copy; {new Date().getFullYear()} Declare. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <p>&copy; {new Date().getFullYear()} Declare. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
