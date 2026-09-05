@@ -112,50 +112,57 @@ async function dispatchInvite(positionId: string) {
   const orgTimezone = service.organizations?.timezone ?? "UTC";
   const serviceDate = formatInOrgTime(service.starts_at, orgTimezone, "EEEE, MMMM d, yyyy · h:mm a");
 
-  await supabase
-    .from("positions")
-    .update({ status: "invited", invited_at: new Date().toISOString() })
-    .eq("id", positionId);
-
-  await supabase.from("notifications").insert({
-    org_id: service.org_id,
-    user_id: position.user_id,
-    type: "invite",
-    title: `You're invited: ${role.name} for ${service.title}`,
-    body: serviceDate,
-    link: "/my-schedule",
-  });
-
   const acceptUrl = `${siteUrl()}/respond/${positionId}?action=accept`;
   const declineUrl = `${siteUrl()}/respond/${positionId}?action=decline`;
 
-  const { data: emailEnabled } = await supabase.rpc("get_email_preference", {
-    p_user_id: position.user_id,
-    p_category: "invite",
-  });
-  if (emailEnabled !== false) {
-    const orgName = service.organizations?.name ?? "your church";
-    const { subject, html } = positionInviteEmail({
-      orgName,
-      volunteerName: volunteer.name || volunteer.email,
-      serviceTitle: service.title,
-      serviceDate,
-      roleName: role.name,
-      acceptUrl,
-      declineUrl,
-    });
-    await sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
-  }
+  // These four don't depend on each other's results, so they run
+  // concurrently instead of one round-trip at a time — the sequential
+  // version was the main reason a resend of several people felt slow.
+  const [, , emailPref, smsEnabled] = await Promise.all([
+    supabase
+      .from("positions")
+      .update({ status: "invited", invited_at: new Date().toISOString() })
+      .eq("id", positionId),
+    supabase.from("notifications").insert({
+      org_id: service.org_id,
+      user_id: position.user_id,
+      type: "invite",
+      title: `You're invited: ${role.name} for ${service.title}`,
+      body: serviceDate,
+      link: "/my-schedule",
+    }),
+    supabase.rpc("get_email_preference", {
+      p_user_id: position.user_id,
+      p_category: "invite",
+    }),
+    volunteer.phone ? getSmsRemindersEnabled() : Promise.resolve(false),
+  ]);
 
-  if (volunteer.phone && (await getSmsRemindersEnabled())) {
-    const smsText = await renderNamedSmsTemplate(service.org_id, "invite", {
-      role: role.name,
-      service: service.title,
-      when: serviceDate,
-      respondUrl: acceptUrl,
-    });
-    await sendSms(volunteer.phone, smsText);
-  }
+  await Promise.all([
+    emailPref.data !== false
+      ? (() => {
+          const orgName = service.organizations?.name ?? "your church";
+          const { subject, html } = positionInviteEmail({
+            orgName,
+            volunteerName: volunteer.name || volunteer.email,
+            serviceTitle: service.title,
+            serviceDate,
+            roleName: role.name,
+            acceptUrl,
+            declineUrl,
+          });
+          return sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
+        })()
+      : Promise.resolve(),
+    volunteer.phone && smsEnabled
+      ? renderNamedSmsTemplate(service.org_id, "invite", {
+          role: role.name,
+          service: service.title,
+          when: serviceDate,
+          respondUrl: acceptUrl,
+        }).then((smsText) => sendSms(volunteer.phone!, smsText))
+      : Promise.resolve(),
+  ]);
 
   void profile;
 }
@@ -176,9 +183,7 @@ export async function sendAllInvites(serviceId: string) {
     .eq("org_id", profile.org_id)
     .eq("status", "draft");
 
-  for (const draft of drafts ?? []) {
-    await dispatchInvite(draft.id);
-  }
+  await Promise.all((drafts ?? []).map((draft) => dispatchInvite(draft.id)));
 
   revalidatePath(`/services/${serviceId}`);
 }
@@ -194,9 +199,7 @@ export async function resendAllPendingInvites(serviceId: string) {
     .eq("org_id", profile.org_id)
     .eq("status", "invited");
 
-  for (const position of invited ?? []) {
-    await dispatchInvite(position.id);
-  }
+  await Promise.all((invited ?? []).map((position) => dispatchInvite(position.id)));
 
   revalidatePath(`/services/${serviceId}`);
 }
