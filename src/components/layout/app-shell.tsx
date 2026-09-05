@@ -95,9 +95,22 @@ export function AppShell({
             >
               <Menu className="size-5" />
             </Button>
-            {/* Each page renders its own <h1> in the scrolling content below
-                — this is a static wayfinding label, not the document heading. */}
-            <span className="truncate text-sm font-semibold">{pageTitle}</span>
+            {/* On desktop the always-visible sidebar already shows the brand
+                + church name, so the header just needs a wayfinding label.
+                On mobile the sidebar is hidden behind the hamburger above, so
+                this is the only place that branding is visible without an
+                extra tap — shown here instead of the page label to actually
+                satisfy "always visible", not just present somewhere. */}
+            <span className="hidden truncate text-sm font-semibold md:inline">{pageTitle}</span>
+            <span className="flex min-w-0 items-center gap-2 md:hidden">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-primary to-chart-2">
+                <DeclareMark className="size-3.5 text-primary-foreground" />
+              </span>
+              <span className="flex min-w-0 flex-col leading-tight">
+                <span className="truncate text-[10px] font-medium text-muted-foreground">Declare</span>
+                <span className="truncate text-sm font-semibold">{orgName}</span>
+              </span>
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
