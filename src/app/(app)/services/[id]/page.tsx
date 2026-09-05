@@ -104,11 +104,22 @@ export default async function ServiceDetailPage({
     <div className="grid gap-4">
       <ServiceHeader service={service} isScheduler={isScheduler} timezone={timezone} />
       {FEATURES.planning ? (
-        <Tabs defaultValue="plan">
-          <TabsList>
-            <TabsTrigger value="plan">Plan</TabsTrigger>
-            <TabsTrigger value="people">People</TabsTrigger>
+        <Tabs defaultValue="people">
+          <TabsList className="h-11 w-full max-w-sm bg-muted/70 p-1 sm:w-fit">
+            <TabsTrigger
+              value="people"
+              className="flex-1 text-sm font-semibold data-active:bg-primary data-active:text-primary-foreground data-active:shadow-md sm:flex-none sm:px-6"
+            >
+              Roles
+            </TabsTrigger>
+            <TabsTrigger
+              value="plan"
+              className="flex-1 text-sm font-semibold data-active:bg-primary data-active:text-primary-foreground data-active:shadow-md sm:flex-none sm:px-6"
+            >
+              Plan
+            </TabsTrigger>
           </TabsList>
+          <TabsContent value="people">{peopleTab}</TabsContent>
           <TabsContent value="plan">
             <PlanBuilder
               serviceId={id}
@@ -119,7 +130,6 @@ export default async function ServiceDetailPage({
               initialSermonSlidesUrl={service.sermon_slides_url}
             />
           </TabsContent>
-          <TabsContent value="people">{peopleTab}</TabsContent>
         </Tabs>
       ) : (
         peopleTab
