@@ -16,10 +16,34 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Populated from env vars in CI (see .github/workflows/build-android-release.yml)
+    // so the keystore itself never touches the repo. Left unsigned when
+    // those aren't set — that's fine for the existing debug-APK workflow,
+    // which never builds the release variant at all.
+    def releaseKeystorePath = System.getenv("ANDROID_RELEASE_KEYSTORE_PATH")
+    def releaseKeystorePassword = System.getenv("ANDROID_RELEASE_KEYSTORE_PASSWORD")
+    def releaseKeyAlias = System.getenv("ANDROID_RELEASE_KEY_ALIAS")
+    def releaseKeyPassword = System.getenv("ANDROID_RELEASE_KEY_PASSWORD")
+    def hasReleaseSigning = releaseKeystorePath && releaseKeystorePassword && releaseKeyAlias && releaseKeyPassword
+
+    if (hasReleaseSigning) {
+        signingConfigs {
+            release {
+                storeFile file(releaseKeystorePath)
+                storePassword releaseKeystorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
