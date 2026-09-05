@@ -4,7 +4,8 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginWithGoogle, signup } from "../actions";
+import { signup } from "../actions";
+import { GoogleSignInButton } from "../google-sign-in-button";
 
 export function SignupForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState(signup, undefined);
@@ -15,12 +16,7 @@ export function SignupForm({ next }: { next?: string }) {
 
   return (
     <div className="grid gap-4">
-      <form action={loginWithGoogle}>
-        {next ? <input type="hidden" name="next" value={next} /> : null}
-        <Button type="submit" variant="outline" className="w-full">
-          Continue with Google
-        </Button>
-      </form>
+      <GoogleSignInButton next={next} />
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <div className="h-px flex-1 bg-border" />

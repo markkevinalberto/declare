@@ -18,6 +18,18 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Google's OAuth pages refuse to sign in from this app's own
+                 WebView, so login opens in the device's external browser
+                 instead; this custom-scheme intent filter is what lets
+                 Android hand the OAuth redirect back to this app afterward
+                 instead of leaving it stranded in the browser. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mka.declare.app" android:host="auth-callback" />
+            </intent-filter>
         </activity>
 
         <provider
