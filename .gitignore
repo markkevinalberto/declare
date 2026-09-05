@@ -42,3 +42,7 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# built app bundles — regenerate via the release workflow, don't commit
+play-store-assets/*.aab
+play-store-assets/*.apk
