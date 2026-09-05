@@ -118,25 +118,6 @@ export async function loginWithGoogle(formData: FormData) {
   redirect(data.url);
 }
 
-/**
- * Same OAuth kickoff as loginWithGoogle, but returns the URL instead of
- * redirecting to it. Google's sign-in page refuses to load inside the
- * Android app's own WebView ("This browser or app may not be secure"), so
- * the native app opens this URL in an external browser instead — see
- * GoogleSignInButton, which is the only caller.
- */
-export async function getGoogleOAuthUrl(
-  redirectTo: string
-): Promise<{ url?: string; error?: string }> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo, skipBrowserRedirect: true },
-  });
-  if (error) return { error: error.message };
-  return { url: data.url };
-}
-
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();

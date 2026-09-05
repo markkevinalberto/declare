@@ -7,7 +7,7 @@ import { Browser } from "@capacitor/browser";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
-import { loginWithGoogle, getGoogleOAuthUrl } from "./actions";
+import { loginWithGoogle } from "./actions";
 
 // Where Android hands the OAuth redirect back to this app — registered as
 // an intent filter in android/app/src/main/AndroidManifest.xml.
@@ -63,13 +63,25 @@ export function GoogleSignInButton({ next }: { next?: string }) {
     const callback = next
       ? `${NATIVE_CALLBACK_SCHEME}?next=${encodeURIComponent(next)}`
       : NATIVE_CALLBACK_SCHEME;
-    const { url, error } = await getGoogleOAuthUrl(callback);
-    if (error || !url) {
-      toast.error(error ?? "Could not start Google sign-in.");
+
+    // Deliberately the same client instance (and so the same storage) that
+    // appUrlOpen's exchangeCodeForSession call below uses — starting the
+    // PKCE flow via a Server Action stores the code_verifier through the
+    // server client's cookie writer, which isn't guaranteed to be the same
+    // place the browser client looks for it later. Keeping the whole flow
+    // client-side is what Supabase's own native-app OAuth guide does, and
+    // what actually fixed an "invalid flow state" error on first attempt.
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: callback, skipBrowserRedirect: true },
+    });
+    if (error || !data.url) {
+      toast.error(error?.message ?? "Could not start Google sign-in.");
       setPending(false);
       return;
     }
-    await Browser.open({ url });
+    await Browser.open({ url: data.url });
   }
 
   if (!isNative) {
