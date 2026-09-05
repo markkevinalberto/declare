@@ -40,7 +40,18 @@ export function RoleGroupList({
   isAdmin: boolean;
 }) {
   const [groups, setGroups] = useState(initialGroups);
+  const [syncedGroups, setSyncedGroups] = useState(initialGroups);
+  if (initialGroups !== syncedGroups) {
+    setSyncedGroups(initialGroups);
+    setGroups(initialGroups);
+  }
+
   const [roles, setRoles] = useState(initialRoles);
+  const [syncedRoles, setSyncedRoles] = useState(initialRoles);
+  if (initialRoles !== syncedRoles) {
+    setSyncedRoles(initialRoles);
+    setRoles(initialRoles);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
