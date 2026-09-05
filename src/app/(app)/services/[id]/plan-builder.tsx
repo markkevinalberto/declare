@@ -16,9 +16,12 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { FileText, Plus, Type } from "lucide-react";
+import { FileText, Mic2, Plus, Type, Wallet } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import {
   createPlanItem,
@@ -26,6 +29,7 @@ import {
   reorderPlanItems,
   updatePlanItem,
 } from "./actions";
+import { updateServiceProgramInfo } from "../actions";
 import { PlanItemRow, type PlanItem } from "./plan-item-row";
 import { SongPickerPopover } from "./song-picker-popover";
 
@@ -42,12 +46,22 @@ export function PlanBuilder({
   serviceId,
   initialItems,
   isScheduler,
+  initialPreacherName,
+  initialGivingExhorterName,
+  initialSermonSlidesUrl,
 }: {
   serviceId: string;
   initialItems: PlanItem[];
   isScheduler: boolean;
+  initialPreacherName?: string | null;
+  initialGivingExhorterName?: string | null;
+  initialSermonSlidesUrl?: string | null;
 }) {
   const [items, setItems] = useState<PlanItem[]>(initialItems);
+  const [preacherName, setPreacherName] = useState(initialPreacherName ?? "");
+  const [givingExhorterName, setGivingExhorterName] = useState(initialGivingExhorterName ?? "");
+  const [sermonSlidesUrl, setSermonSlidesUrl] = useState(initialSermonSlidesUrl ?? "");
+  const [programSaving, setProgramSaving] = useState(false);
   // Drag/save/delete below apply optimistically before the server confirms —
   // the polling fallback (not the Realtime-triggered path, which only fires
   // after a write has actually landed) skips itself for a few seconds after
@@ -165,6 +179,17 @@ export function PlanBuilder({
     await refetchItems();
   }
 
+  async function saveProgramInfo() {
+    setProgramSaving(true);
+    const result = await updateServiceProgramInfo(serviceId, {
+      preacherName,
+      givingExhorterName,
+      sermonSlidesUrl,
+    });
+    setProgramSaving(false);
+    if (result.error) toast.error(result.error);
+  }
+
   return (
     <Card className="print:border-none print:shadow-none">
       <CardHeader className="flex-row items-center justify-between space-y-0">
@@ -174,6 +199,74 @@ export function PlanBuilder({
         </span>
       </CardHeader>
       <CardContent>
+        {isScheduler ? (
+          <div className="mb-4 grid gap-3 rounded-lg border bg-muted/30 p-3 print:hidden sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor={`preacher-${serviceId}`} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Mic2 className="size-3.5" /> Preacher
+              </Label>
+              <Input
+                id={`preacher-${serviceId}`}
+                value={preacherName}
+                placeholder="Who's preaching"
+                onChange={(e) => setPreacherName(e.target.value)}
+                onBlur={saveProgramInfo}
+                disabled={programSaving}
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor={`exhorter-${serviceId}`} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Wallet className="size-3.5" /> Giving exhorter
+              </Label>
+              <Input
+                id={`exhorter-${serviceId}`}
+                value={givingExhorterName}
+                placeholder="Who's exhorting"
+                onChange={(e) => setGivingExhorterName(e.target.value)}
+                onBlur={saveProgramInfo}
+                disabled={programSaving}
+              />
+            </div>
+            <div className="grid gap-1.5 sm:col-span-2">
+              <Label htmlFor={`slides-${serviceId}`} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <FileText className="size-3.5" /> Sermon slides link
+              </Label>
+              <Input
+                id={`slides-${serviceId}`}
+                type="url"
+                value={sermonSlidesUrl}
+                placeholder="Canva, Google Slides, Drive — any link"
+                onChange={(e) => setSermonSlidesUrl(e.target.value)}
+                onBlur={saveProgramInfo}
+                disabled={programSaving}
+              />
+            </div>
+          </div>
+        ) : preacherName || givingExhorterName || sermonSlidesUrl ? (
+          <div className="mb-4 flex flex-wrap items-center gap-2 print:hidden">
+            {preacherName ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
+                <Mic2 className="size-3.5" /> {preacherName}
+              </span>
+            ) : null}
+            {givingExhorterName ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
+                <Wallet className="size-3.5" /> {givingExhorterName}
+              </span>
+            ) : null}
+            {sermonSlidesUrl ? (
+              <a
+                href={sermonSlidesUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-primary hover:bg-accent"
+              >
+                <FileText className="size-3.5" /> Sermon slides
+              </a>
+            ) : null}
+          </div>
+        ) : null}
+
         {items.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             {isScheduler

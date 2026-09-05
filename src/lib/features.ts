@@ -8,7 +8,7 @@
  */
 export const FEATURES = {
   /** Service plan builder (songs/scripture/segments flow) and its public share link. */
-  planning: false,
+  planning: true,
   /** Live presenter console (projector/stage output) and the desktop app, which exists solely to run it. */
   presenter: false,
 } as const;

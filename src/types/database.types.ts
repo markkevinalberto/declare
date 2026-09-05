@@ -227,6 +227,9 @@ export interface Database {
           starts_at: string;
           campus: string | null;
           notes: string | null;
+          preacher_name: string | null;
+          giving_exhorter_name: string | null;
+          sermon_slides_url: string | null;
           share_token: string;
           created_by: string;
           created_at: string;
@@ -239,6 +242,9 @@ export interface Database {
           starts_at: string;
           campus?: string | null;
           notes?: string | null;
+          preacher_name?: string | null;
+          giving_exhorter_name?: string | null;
+          sermon_slides_url?: string | null;
           share_token?: string;
           created_by: string;
           created_at?: string;

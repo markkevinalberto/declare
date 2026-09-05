@@ -20,7 +20,9 @@ export default async function ServiceDetailPage({
 
   const { data: service } = await supabase
     .from("services")
-    .select("id, title, starts_at, campus, notes, share_token")
+    .select(
+      "id, title, starts_at, campus, notes, preacher_name, giving_exhorter_name, sermon_slides_url, share_token"
+    )
     .eq("id", id)
     .eq("org_id", profile.org_id)
     .single();
@@ -108,7 +110,14 @@ export default async function ServiceDetailPage({
             <TabsTrigger value="people">People</TabsTrigger>
           </TabsList>
           <TabsContent value="plan">
-            <PlanBuilder serviceId={id} initialItems={items ?? []} isScheduler={isScheduler} />
+            <PlanBuilder
+              serviceId={id}
+              initialItems={items ?? []}
+              isScheduler={isScheduler}
+              initialPreacherName={service.preacher_name}
+              initialGivingExhorterName={service.giving_exhorter_name}
+              initialSermonSlidesUrl={service.sermon_slides_url}
+            />
           </TabsContent>
           <TabsContent value="people">{peopleTab}</TabsContent>
         </Tabs>

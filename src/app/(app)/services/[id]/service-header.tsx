@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Link2, MapPin, MonitorPlay, Pencil, Printer } from "lucide-react";
+import { FileText, Link2, MapPin, Mic2, MonitorPlay, Pencil, Printer, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInOrgTime } from "@/lib/org-time";
@@ -15,6 +15,9 @@ type Service = {
   starts_at: string;
   campus: string | null;
   notes: string | null;
+  preacher_name: string | null;
+  giving_exhorter_name: string | null;
+  sermon_slides_url: string | null;
   share_token: string;
 };
 
@@ -50,6 +53,30 @@ export function ServiceHeader({
           </p>
           {service.notes ? (
             <p className="text-sm text-muted-foreground">{service.notes}</p>
+          ) : null}
+          {service.preacher_name || service.giving_exhorter_name || service.sermon_slides_url ? (
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              {service.preacher_name ? (
+                <span className="flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
+                  <Mic2 className="size-3.5" /> {service.preacher_name}
+                </span>
+              ) : null}
+              {service.giving_exhorter_name ? (
+                <span className="flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground">
+                  <Wallet className="size-3.5" /> {service.giving_exhorter_name}
+                </span>
+              ) : null}
+              {service.sermon_slides_url ? (
+                <a
+                  href={service.sermon_slides_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium text-primary hover:bg-accent"
+                >
+                  <FileText className="size-3.5" /> Sermon slides
+                </a>
+              ) : null}
+            </div>
           ) : null}
         </div>
         <div className="flex items-center gap-1 print:hidden">

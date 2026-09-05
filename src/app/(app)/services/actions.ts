@@ -292,3 +292,39 @@ export async function updateService(
   revalidatePath("/dashboard");
   return undefined;
 }
+
+/**
+ * The preacher/giving-exhorter/sermon-slides fields live in the plan
+ * builder (that's where the service's program gets put together), so this
+ * is a separate, lighter save than updateService — deliberately doesn't
+ * touch title/date/time/campus/notes, so it can't clobber them.
+ */
+export async function updateServiceProgramInfo(
+  serviceId: string,
+  fields: {
+    preacherName?: string;
+    givingExhorterName?: string;
+    sermonSlidesUrl?: string;
+  }
+): Promise<{ error?: string }> {
+  const profile = await requireScheduler();
+
+  if (fields.sermonSlidesUrl && !z.url().safeParse(fields.sermonSlidesUrl).success) {
+    return { error: "Enter a valid URL for the sermon slides link." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("services")
+    .update({
+      preacher_name: fields.preacherName?.trim() || null,
+      giving_exhorter_name: fields.givingExhorterName?.trim() || null,
+      sermon_slides_url: fields.sermonSlidesUrl?.trim() || null,
+    })
+    .eq("id", serviceId)
+    .eq("org_id", profile.org_id);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/services/${serviceId}`);
+  return {};
+}
