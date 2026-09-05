@@ -63,28 +63,45 @@ export function GoogleSignInButton({ next }: { next?: string }) {
 
       await Browser.close().catch(() => {});
 
-      // Implicit-flow tokens come back in the URL fragment
-      // (...#access_token=...&refresh_token=...), not a query param.
-      const fragment = event.url.split("#")[1] ?? "";
-      const params = new URLSearchParams(fragment);
-      const access_token = params.get("access_token");
-      const refresh_token = params.get("refresh_token");
-
-      if (!access_token || !refresh_token) {
-        toast.error(params.get("error_description") ?? "Google sign-in didn't complete.");
-        setPending(false);
-        handledRef.current = false;
-        return;
-      }
+      // Implicit-flow tokens are documented to come back in the URL
+      // fragment, but Android's Custom-Tab-to-Intent handoff for a
+      // non-http custom scheme isn't guaranteed to preserve one (fragments
+      // are a browser-side concept, not something transmitted over HTTP) —
+      // so check both the fragment and the query string, and both the
+      // token shape and a bare code, before giving up.
+      const [beforeHash, fragment = ""] = event.url.split("#");
+      const queryString = beforeHash.split("?")[1] ?? "";
+      const fragmentParams = new URLSearchParams(fragment);
+      const queryParams = new URLSearchParams(queryString);
+      const access_token = fragmentParams.get("access_token") ?? queryParams.get("access_token");
+      const refresh_token = fragmentParams.get("refresh_token") ?? queryParams.get("refresh_token");
+      const code = fragmentParams.get("code") ?? queryParams.get("code");
 
       const supabase = createClient();
-      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      const result = access_token && refresh_token
+        ? await supabase.auth.setSession({ access_token, refresh_token })
+        : code
+          ? await supabase.auth.exchangeCodeForSession(event.url)
+          : null;
+
       setPending(false);
-      if (error) {
-        toast.error(error.message);
+
+      if (!result) {
+        const errorDescription =
+          fragmentParams.get("error_description") ?? queryParams.get("error_description");
+        toast.error(
+          errorDescription ?? `Google sign-in didn't complete. Got back: ${event.url.slice(0, 200)}`
+        );
         handledRef.current = false;
         return;
       }
+
+      if (result.error) {
+        toast.error(result.error.message);
+        handledRef.current = false;
+        return;
+      }
+
       window.location.href = next && next.startsWith("/") ? next : "/";
     });
 
