@@ -1,4 +1,20 @@
 import sharp from "sharp";
+import { readFileSync } from "fs";
+import { Resvg } from "@resvg/resvg-js";
+
+// Poppins is the Declare brand typeface (see src/app/layout.tsx). sharp's
+// built-in SVG loader (librsvg) ignores @font-face and silently falls back
+// to a generic serif — confirmed by inspecting its own output — so this
+// renders through resvg instead, which accepts font files directly and
+// actually uses them.
+const fontFiles = ["scripts/fonts/Poppins-Bold.ttf", "scripts/fonts/Poppins-Regular.ttf"];
+
+function renderSvg(svgString) {
+  const resvg = new Resvg(svgString, {
+    font: { fontFiles, loadSystemFonts: false, defaultFontFamily: "Poppins" },
+  });
+  return resvg.render().asPng();
+}
 
 // Capacitor's splash pipeline "cover"-scales this square source to fill
 // whatever the device's portrait canvas is, then center-crops. For a square
@@ -11,19 +27,21 @@ import sharp from "sharp";
 const SIZE = 2732;
 const CENTER = SIZE / 2;
 
-// Renders text alone on a padded transparent canvas and trims it, so
-// layout math uses the real rendered ink width instead of a guessed
-// character-count estimate (a guess that was previously off by ~100px and
-// threw the whole row's horizontal centering off).
-async function measureTextWidth(text, { fontSize, weight = 400, letterSpacing = 0 }) {
+// Renders text alone on a padded canvas and trims it, so layout math uses
+// the real rendered ink width instead of a guessed character-count
+// estimate (a guess that was previously off by ~100px and threw the whole
+// row's horizontal centering off).
+function measureTextWidth(text, { fontSize, weight, letterSpacing = 0 }) {
   const pad = fontSize * 2;
   const w = fontSize * text.length * 1.5 + pad * 2;
   const h = fontSize * 3;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
-    <text x="${pad}" y="${h / 2}" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="${weight}" letter-spacing="${letterSpacing}" fill="#fff">${text}</text>
+    <text x="${pad}" y="${h / 2}" font-family="Poppins" font-weight="${weight}" font-size="${fontSize}" letter-spacing="${letterSpacing}" fill="#fff">${text}</text>
   </svg>`;
-  const { info } = await sharp(Buffer.from(svg)).trim().toBuffer({ resolveWithObject: true });
-  return info.width;
+  return sharp(renderSvg(svg))
+    .trim()
+    .toBuffer({ resolveWithObject: true })
+    .then(({ info }) => info.width);
 }
 
 // Same mark geometry as src/app/icon.svg and scripts/gen-feature-graphic.mjs
@@ -36,19 +54,21 @@ const MARK_PATH =
 
 const GAP = 36;
 const NAME_FONT_SIZE = 130;
-const NAME_LETTER_SPACING = -2;
+const NAME_WEIGHT = 700;
+const NAME_LETTER_SPACING = -1;
 const TAGLINE_FONT_SIZE = 42;
+const TAGLINE_WEIGHT = 400;
 const TAGLINE_LINE1 = "Schedule volunteers.";
 const TAGLINE_LINE2 = "Run your church team.";
 
 const nameWidth = await measureTextWidth("Declare", {
   fontSize: NAME_FONT_SIZE,
-  weight: 700,
+  weight: NAME_WEIGHT,
   letterSpacing: NAME_LETTER_SPACING,
 });
 const taglineWidth = Math.max(
-  await measureTextWidth(TAGLINE_LINE1, { fontSize: TAGLINE_FONT_SIZE }),
-  await measureTextWidth(TAGLINE_LINE2, { fontSize: TAGLINE_FONT_SIZE })
+  await measureTextWidth(TAGLINE_LINE1, { fontSize: TAGLINE_FONT_SIZE, weight: TAGLINE_WEIGHT }),
+  await measureTextWidth(TAGLINE_LINE2, { fontSize: TAGLINE_FONT_SIZE, weight: TAGLINE_WEIGHT })
 );
 
 const ROW_WIDTH = BADGE_SIZE + GAP + Math.max(nameWidth, taglineWidth);
@@ -97,12 +117,12 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${S
     <path fill="#ffffff" fill-rule="evenodd" d="${MARK_PATH}"/>
   </g>
 
-  <text x="${NAME_X}" y="${NAME_Y}" text-anchor="start" font-family="Arial, sans-serif" font-size="${NAME_FONT_SIZE}" font-weight="700" letter-spacing="${NAME_LETTER_SPACING}" fill="#ffffff">Declare</text>
-  <text x="${NAME_X}" y="${TAGLINE_Y1}" text-anchor="start" font-family="Arial, sans-serif" font-size="${TAGLINE_FONT_SIZE}" fill="rgba(255,255,255,0.72)">${TAGLINE_LINE1}</text>
-  <text x="${NAME_X}" y="${TAGLINE_Y2}" text-anchor="start" font-family="Arial, sans-serif" font-size="${TAGLINE_FONT_SIZE}" fill="rgba(255,255,255,0.72)">${TAGLINE_LINE2}</text>
+  <text x="${NAME_X}" y="${NAME_Y}" text-anchor="start" font-family="Poppins" font-weight="${NAME_WEIGHT}" font-size="${NAME_FONT_SIZE}" letter-spacing="${NAME_LETTER_SPACING}" fill="#ffffff">Declare</text>
+  <text x="${NAME_X}" y="${TAGLINE_Y1}" text-anchor="start" font-family="Poppins" font-weight="${TAGLINE_WEIGHT}" font-size="${TAGLINE_FONT_SIZE}" fill="rgba(255,255,255,0.72)">${TAGLINE_LINE1}</text>
+  <text x="${NAME_X}" y="${TAGLINE_Y2}" text-anchor="start" font-family="Poppins" font-weight="${TAGLINE_WEIGHT}" font-size="${TAGLINE_FONT_SIZE}" fill="rgba(255,255,255,0.72)">${TAGLINE_LINE2}</text>
 </svg>`;
 
-await sharp(Buffer.from(svg)).png().toFile("resources/splash.png");
+await sharp(renderSvg(svg)).png().toFile("resources/splash.png");
 console.log(
   `row width ${ROW_WIDTH.toFixed(0)}px (${((ROW_WIDTH / SIZE) * 100).toFixed(1)}% of canvas), name width ${nameWidth}px`
 );
