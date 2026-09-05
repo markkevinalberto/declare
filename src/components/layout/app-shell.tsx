@@ -55,7 +55,10 @@ export function AppShell({
           <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-chart-2 shadow-md shadow-primary/25">
             <DeclareMark className="size-4 text-primary-foreground" />
           </span>
-          <span className="truncate text-sm font-semibold">{orgName}</span>
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-[11px] font-medium text-muted-foreground">Declare</span>
+            <span className="truncate text-sm font-semibold">{orgName}</span>
+          </span>
         </div>
         <SidebarNav isScheduler={isScheduler} isAdmin={isAdmin} />
       </aside>
@@ -67,7 +70,10 @@ export function AppShell({
             <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-chart-2 shadow-md shadow-primary/25">
               <DeclareMark className="size-4 text-primary-foreground" />
             </span>
-            <span className="truncate text-sm font-semibold">{orgName}</span>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-[11px] font-medium text-muted-foreground">Declare</span>
+              <span className="truncate text-sm font-semibold">{orgName}</span>
+            </span>
           </div>
           <SidebarNav
             isScheduler={isScheduler}
