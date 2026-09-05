@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 import { Capacitor } from "@capacitor/core";
 import { App, type URLOpenListenerEvent } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
@@ -12,6 +13,26 @@ import { loginWithGoogle } from "./actions";
 // Where Android hands the OAuth redirect back to this app — registered as
 // an intent filter in android/app/src/main/AndroidManifest.xml.
 const NATIVE_CALLBACK_SCHEME = "mka.declare.app://auth-callback";
+
+/**
+ * A one-off client used ONLY to kick off the native sign-in, configured for
+ * the implicit flow instead of this app's normal PKCE default. PKCE stores
+ * a code_verifier client-side and expects to find it again when exchanging
+ * the code — that verifier didn't reliably survive the round trip out to
+ * Android's external browser and back (confirmed via Supabase's own auth
+ * logs: every /authorize call correctly reached Google and came back, but
+ * every /token exchange failed with 404 flow_state_not_found regardless of
+ * how long the round trip took). Implicit flow returns the session tokens
+ * directly in the redirect itself, so there's nothing to look up server-side
+ * and nothing that can go missing in transit.
+ */
+function createImplicitFlowClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { flowType: "implicit" } }
+  );
+}
 
 export function GoogleSignInButton({ next }: { next?: string }) {
   const [isNative, setIsNative] = useState(false);
@@ -41,8 +62,23 @@ export function GoogleSignInButton({ next }: { next?: string }) {
       handledRef.current = true;
 
       await Browser.close().catch(() => {});
+
+      // Implicit-flow tokens come back in the URL fragment
+      // (...#access_token=...&refresh_token=...), not a query param.
+      const fragment = event.url.split("#")[1] ?? "";
+      const params = new URLSearchParams(fragment);
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+
+      if (!access_token || !refresh_token) {
+        toast.error(params.get("error_description") ?? "Google sign-in didn't complete.");
+        setPending(false);
+        handledRef.current = false;
+        return;
+      }
+
       const supabase = createClient();
-      const { error } = await supabase.auth.exchangeCodeForSession(event.url);
+      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
       setPending(false);
       if (error) {
         toast.error(error.message);
@@ -64,14 +100,7 @@ export function GoogleSignInButton({ next }: { next?: string }) {
       ? `${NATIVE_CALLBACK_SCHEME}?next=${encodeURIComponent(next)}`
       : NATIVE_CALLBACK_SCHEME;
 
-    // Deliberately the same client instance (and so the same storage) that
-    // appUrlOpen's exchangeCodeForSession call below uses — starting the
-    // PKCE flow via a Server Action stores the code_verifier through the
-    // server client's cookie writer, which isn't guaranteed to be the same
-    // place the browser client looks for it later. Keeping the whole flow
-    // client-side is what Supabase's own native-app OAuth guide does, and
-    // what actually fixed an "invalid flow state" error on first attempt.
-    const supabase = createClient();
+    const supabase = createImplicitFlowClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: callback, skipBrowserRedirect: true },
