@@ -28,6 +28,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${S
     <path fill="#ffffff" fill-rule="evenodd" d="M 40,40 H 125 C 215,40 265,100 265,150 C 265,200 215,260 125,260 H 85 L 40,300 Z M 120,95 L 210,150 L 120,205 Z"/>
   </g>
   <text x="${SIZE / 2}" y="${SIZE / 2 + 210}" text-anchor="middle" font-family="Arial, sans-serif" font-size="130" font-weight="700" letter-spacing="-2" fill="#ffffff">Declare</text>
+  <text x="${SIZE / 2}" y="${SIZE / 2 + 280}" text-anchor="middle" font-family="Arial, sans-serif" font-size="52" fill="rgba(255,255,255,0.72)">Schedule volunteers. Run your church team.</text>
 </svg>`;
 
 await sharp(Buffer.from(svg)).png().toFile("resources/splash.png");
