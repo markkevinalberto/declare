@@ -4,6 +4,7 @@ import sharp from "sharp";
 // center-cropped differently per device aspect ratio, so the logo lockup
 // stays inside a safe central zone rather than the full canvas.
 const SIZE = 2732;
+const CENTER = SIZE / 2;
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
   <defs>
@@ -23,12 +24,16 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${S
   <rect width="${SIZE}" height="${SIZE}" fill="#0b1626"/>
   <rect width="${SIZE}" height="${SIZE}" fill="url(#g1)"/>
   <rect width="${SIZE}" height="${SIZE}" fill="url(#g2)"/>
-  <rect x="${SIZE / 2 - 220}" y="${SIZE / 2 - 340}" width="440" height="440" rx="110" fill="url(#badge)"/>
-  <g transform="translate(${SIZE / 2 - 100} ${SIZE / 2 - 250}) scale(0.9)">
+
+  <!-- Icon on the left, wordmark + tagline stacked to its right — same
+       horizontal lockup as the Play Store feature graphic, just centered
+       in a square canvas so it survives Capacitor's per-device cropping. -->
+  <rect x="${CENTER - 480}" y="${CENTER - 170}" width="340" height="340" rx="90" fill="url(#badge)"/>
+  <g transform="translate(${CENTER - 480 + 78} ${CENTER - 170 + 78}) scale(0.87)">
     <path fill="#ffffff" fill-rule="evenodd" d="M 40,40 H 125 C 215,40 265,100 265,150 C 265,200 215,260 125,260 H 85 L 40,300 Z M 120,95 L 210,150 L 120,205 Z"/>
   </g>
-  <text x="${SIZE / 2}" y="${SIZE / 2 + 210}" text-anchor="middle" font-family="Arial, sans-serif" font-size="130" font-weight="700" letter-spacing="-2" fill="#ffffff">Declare</text>
-  <text x="${SIZE / 2}" y="${SIZE / 2 + 280}" text-anchor="middle" font-family="Arial, sans-serif" font-size="52" fill="rgba(255,255,255,0.72)">Schedule volunteers. Run your church team.</text>
+  <text x="${CENTER - 60}" y="${CENTER - 10}" font-family="Arial, sans-serif" font-size="120" font-weight="700" letter-spacing="-2" fill="#ffffff">Declare</text>
+  <text x="${CENTER - 60}" y="${CENTER + 55}" font-family="Arial, sans-serif" font-size="46" fill="rgba(255,255,255,0.72)">Schedule volunteers. Run your church team.</text>
 </svg>`;
 
 await sharp(Buffer.from(svg)).png().toFile("resources/splash.png");
