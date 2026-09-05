@@ -37,6 +37,13 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+const STATUS_RING: Record<PositionRow["status"], string> = {
+  accepted: "ring-green-500/40",
+  declined: "ring-red-500/40",
+  invited: "ring-zinc-400/40",
+  draft: "ring-muted-foreground/20",
+};
+
 function StatusAvatar({ position }: { position: PositionRow }) {
   const name =
     position.profiles?.name || position.profiles?.email || "Unknown";
@@ -44,16 +51,16 @@ function StatusAvatar({ position }: { position: PositionRow }) {
     <Tooltip>
       <TooltipTrigger
         render={
-          <Avatar className="size-9">
+          <Avatar className={cn("size-12 ring-2", STATUS_RING[position.status])}>
             {position.profiles?.avatar_url ? (
               <AvatarImage src={position.profiles.avatar_url} alt={name} />
             ) : null}
-            <AvatarFallback className="text-xs">
+            <AvatarFallback className="text-sm font-medium">
               {initials(name) || "?"}
             </AvatarFallback>
             <AvatarBadge
               className={cn(
-                "size-4 [&>svg]:size-3",
+                "size-5 [&>svg]:size-3.5",
                 position.status === "accepted" && "bg-green-500 text-white",
                 position.status === "declined" && "bg-red-500 text-white",
                 position.status === "invited" && "bg-zinc-400 text-white",
@@ -70,6 +77,32 @@ function StatusAvatar({ position }: { position: PositionRow }) {
       />
       <TooltipContent>{STATUS_LABEL[position.status]}</TooltipContent>
     </Tooltip>
+  );
+}
+
+function PersonRoleBadge({
+  position,
+  roleName,
+  mine,
+}: {
+  position: PositionRow;
+  roleName: string;
+  mine: boolean;
+}) {
+  const name = position.profiles?.name ?? position.profiles?.email ?? "Unknown";
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <StatusAvatar position={position} />
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="truncate text-sm font-medium">
+          {name}
+          {mine ? <span className="text-muted-foreground"> (you)</span> : null}
+        </span>
+        <span className="inline-flex w-fit items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
+          {roleName}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -157,17 +190,9 @@ export function RoleScheduleRow({
           return (
             <div
               key={position.id}
-              className="flex items-center justify-between gap-2 border-b px-3 py-2 last:border-b-0"
+              className="flex items-center justify-between gap-2 border-b px-3 py-3 last:border-b-0"
             >
-              <div className="flex min-w-0 items-center gap-2.5">
-                <StatusAvatar position={position} />
-                <span className="truncate text-sm">
-                  {position.profiles?.name ?? position.profiles?.email ?? "Unknown"}
-                  {mine ? (
-                    <span className="text-muted-foreground"> (you)</span>
-                  ) : null}
-                </span>
-              </div>
+              <PersonRoleBadge position={position} roleName={roleName} mine={mine} />
               <div className="flex shrink-0 items-center gap-1">
                 {canRespond && position.status !== "accepted" ? (
                   <Button
