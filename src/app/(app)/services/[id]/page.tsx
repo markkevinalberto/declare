@@ -87,6 +87,35 @@ export default async function ServiceDetailPage({
         : emptyPeople,
     ]);
 
+  // Surface who's already marked unavailable for this service's date directly
+  // in the schedule, rather than only warning about it when a scheduler opens
+  // the "add person" popover — someone can be assigned before they add a
+  // blockout, or a scheduler may never open that popover for roles that are
+  // already filled.
+  let unavailableUserIds: string[] = [];
+  if (isScheduler) {
+    const relevantUserIds = [
+      ...new Set(
+        [...(positions ?? []).map((p) => p.user_id), ...(people ?? []).map((p) => p.id)].filter(
+          (id): id is string => Boolean(id)
+        )
+      ),
+    ];
+    if (relevantUserIds.length > 0) {
+      const { data: conflicts } = await supabase.rpc("scheduling_conflicts_bulk", {
+        p_user_ids: relevantUserIds,
+        p_service_id: id,
+      });
+      unavailableUserIds = [
+        ...new Set(
+          (conflicts ?? [])
+            .filter((c) => c.conflict_type === "blockout")
+            .map((c) => c.user_id)
+        ),
+      ];
+    }
+  }
+
   const peopleTab = (
     <PeopleTab
       serviceId={id}
@@ -97,6 +126,7 @@ export default async function ServiceDetailPage({
       people={people ?? []}
       isScheduler={isScheduler}
       currentUserId={profile.id}
+      unavailableUserIds={unavailableUserIds}
     />
   );
 

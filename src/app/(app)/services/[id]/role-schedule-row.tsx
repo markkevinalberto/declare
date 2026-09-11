@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Check, CircleHelp, Minus, Send, Trash2, UserPlus, X } from "lucide-react";
+import { AlertTriangle, Check, CircleHelp, Minus, Send, Trash2, UserPlus, X } from "lucide-react";
 import {
   Avatar,
   AvatarBadge,
@@ -84,10 +84,12 @@ function PersonRoleBadge({
   position,
   roleName,
   mine,
+  unavailable,
 }: {
   position: PositionRow;
   roleName: string;
   mine: boolean;
+  unavailable: boolean;
 }) {
   const name = position.profiles?.name ?? position.profiles?.email ?? "Unknown";
   return (
@@ -98,9 +100,25 @@ function PersonRoleBadge({
           {name}
           {mine ? <span className="text-muted-foreground"> (you)</span> : null}
         </span>
-        <span className="inline-flex w-fit items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-          {roleName}
-        </span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="inline-flex w-fit items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
+            {roleName}
+          </span>
+          {unavailable ? (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-500" />
+                }
+              >
+                <AlertTriangle className="size-3" /> Unavailable
+              </TooltipTrigger>
+              <TooltipContent>
+                {name} marked a blockout date covering this service
+              </TooltipContent>
+            </Tooltip>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -115,6 +133,7 @@ export function RoleScheduleRow({
   isScheduler,
   currentUserId,
   canSelfSignUp = false,
+  unavailableUserIds = [],
 }: {
   serviceId: string;
   roleId: string;
@@ -124,7 +143,9 @@ export function RoleScheduleRow({
   isScheduler: boolean;
   currentUserId: string;
   canSelfSignUp?: boolean;
+  unavailableUserIds?: string[];
 }) {
+  const unavailableSet = new Set(unavailableUserIds);
   const [pending, startTransition] = useTransition();
 
   const assignedIds = new Set(positions.map((p) => p.user_id).filter(Boolean));
@@ -192,7 +213,12 @@ export function RoleScheduleRow({
               key={position.id}
               className="flex items-center justify-between gap-2 border-b px-3 py-3 last:border-b-0"
             >
-              <PersonRoleBadge position={position} roleName={roleName} mine={mine} />
+              <PersonRoleBadge
+                position={position}
+                roleName={roleName}
+                mine={mine}
+                unavailable={Boolean(position.user_id && unavailableSet.has(position.user_id))}
+              />
               <div className="flex shrink-0 items-center gap-1">
                 {canRespond && position.status !== "accepted" ? (
                   <Button

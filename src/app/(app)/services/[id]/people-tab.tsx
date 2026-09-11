@@ -69,6 +69,7 @@ export function PeopleTab({
   people,
   isScheduler,
   currentUserId,
+  unavailableUserIds = [],
 }: {
   serviceId: string;
   groups: RoleGroup[];
@@ -78,6 +79,7 @@ export function PeopleTab({
   people: Person[];
   isScheduler: boolean;
   currentUserId: string;
+  unavailableUserIds?: string[];
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -197,6 +199,7 @@ export function PeopleTab({
                 isScheduler={isScheduler}
                 currentUserId={currentUserId}
                 canSelfSignUp={iHoldThisRole}
+                unavailableUserIds={unavailableUserIds}
               />
             );
           })}
