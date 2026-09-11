@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { formatInOrgTime } from "@/lib/org-time";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FEATURES } from "@/lib/features";
 import { ServiceHeader } from "./service-header";
@@ -115,6 +116,26 @@ export default async function ServiceDetailPage({
     ];
   }
 
+  // A standalone summary of who's unavailable that service's date, org-wide
+  // — not limited to people already assigned. Someone can be relevant to a
+  // still-empty role (or not hold any role for this service at all) and a
+  // scheduler still benefits from knowing upfront not to ask them, rather
+  // than only surfacing it once they're already assigned.
+  const serviceLocalDate = formatInOrgTime(service.starts_at, timezone, "yyyy-MM-dd");
+  const { data: blockoutsToday } = await supabase
+    .from("blockout_dates")
+    .select("user_id, reason, profiles!blockout_dates_user_id_fkey(id, name)")
+    .eq("org_id", profile.org_id)
+    .lte("start_date", serviceLocalDate)
+    .gte("end_date", serviceLocalDate);
+  const unavailablePeople = (blockoutsToday ?? [])
+    .filter((b) => b.profiles)
+    .map((b) => ({
+      id: b.profiles!.id,
+      name: b.profiles!.name,
+      reason: b.reason,
+    }));
+
   const peopleTab = (
     <PeopleTab
       serviceId={id}
@@ -126,6 +147,7 @@ export default async function ServiceDetailPage({
       isScheduler={isScheduler}
       currentUserId={profile.id}
       unavailableUserIds={unavailableUserIds}
+      unavailablePeople={unavailablePeople}
     />
   );
 
