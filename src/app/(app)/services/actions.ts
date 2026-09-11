@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { format } from "date-fns";
 import { requireScheduler } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import type { createClient as createClientType } from "@/lib/supabase/server";
-import { fromOrgTime } from "@/lib/org-time";
+import { fromOrgTime, toOrgTime } from "@/lib/org-time";
 
 export type ServiceActionState = { error?: string } | undefined;
 
@@ -155,9 +156,21 @@ export async function duplicateService(serviceId: string) {
     .eq("service_id", serviceId)
     .order("sort_order");
 
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  nextWeek.setHours(9, 0, 0, 0);
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("timezone")
+    .eq("id", profile.org_id)
+    .single();
+  const timezone = org?.timezone ?? "UTC";
+
+  // Land on "a week from today, 9am" in the org's own local time — the
+  // previous version used setHours(9), which sets 9am in the server's
+  // runtime timezone (UTC on Vercel), so an org that isn't UTC saw the
+  // duplicated service land at a different wall-clock hour than 9am.
+  const nextWeekLocal = toOrgTime(new Date(), timezone);
+  nextWeekLocal.setDate(nextWeekLocal.getDate() + 7);
+  const nextWeekDate = format(nextWeekLocal, "yyyy-MM-dd");
+  const startsAt = fromOrgTime(`${nextWeekDate}T09:00`, timezone);
 
   const { data: created, error } = await supabase
     .from("services")
@@ -166,7 +179,7 @@ export async function duplicateService(serviceId: string) {
       title: original.title,
       campus: original.campus,
       notes: original.notes,
-      starts_at: nextWeek.toISOString(),
+      starts_at: startsAt.toISOString(),
       created_by: profile.id,
     })
     .select("id")
