@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
+import { AlertTriangle } from "lucide-react";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { formatInOrgTime } from "@/lib/org-time";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FEATURES } from "@/lib/features";
 import { ServiceHeader } from "./service-header";
 import { PlanBuilder } from "./plan-builder";
@@ -147,13 +149,37 @@ export default async function ServiceDetailPage({
       isScheduler={isScheduler}
       currentUserId={profile.id}
       unavailableUserIds={unavailableUserIds}
-      unavailablePeople={unavailablePeople}
     />
   );
 
   return (
     <div className="grid gap-4">
       <ServiceHeader service={service} isScheduler={isScheduler} timezone={timezone} />
+
+      {unavailablePeople.length > 0 ? (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-400">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <p className="min-w-0">
+            <span className="font-medium">Unavailable for this service:</span>{" "}
+            {unavailablePeople.map((person, i) => (
+              <span key={person.id}>
+                {i > 0 ? ", " : ""}
+                {person.reason ? (
+                  <Tooltip>
+                    <TooltipTrigger render={<span className="underline decoration-dotted" />}>
+                      {person.name}
+                    </TooltipTrigger>
+                    <TooltipContent>{person.reason}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  person.name
+                )}
+              </span>
+            ))}
+          </p>
+        </div>
+      ) : null}
+
       {FEATURES.planning ? (
         <Tabs defaultValue="people">
           <TabsList className="h-11 w-full max-w-sm bg-muted/70 p-1 sm:w-fit">
