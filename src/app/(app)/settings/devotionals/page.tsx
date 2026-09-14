@@ -22,7 +22,9 @@ export default async function DevotionalsPage() {
       .single(),
     supabase
       .from("devotionals")
-      .select("id, title, scripture_reference, scripture_text, reflection, sort_order")
+      .select(
+        "id, title, scripture_reference, scripture_text, reflection, reflection_question, prayer, sort_order"
+      )
       .eq("org_id", profile.org_id)
       .order("sort_order", { ascending: true }),
   ]);

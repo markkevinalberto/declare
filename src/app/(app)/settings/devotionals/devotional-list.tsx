@@ -29,6 +29,8 @@ export type DevotionalRow = {
   scripture_reference: string;
   scripture_text: string | null;
   reflection: string;
+  reflection_question: string | null;
+  prayer: string | null;
   sort_order: number;
 };
 
@@ -37,6 +39,8 @@ const EMPTY_DRAFT: DevotionalInput = {
   scriptureReference: "",
   scriptureText: "",
   reflection: "",
+  reflectionQuestion: "",
+  prayer: "",
 };
 
 function toDraft(row: DevotionalRow): DevotionalInput {
@@ -45,6 +49,8 @@ function toDraft(row: DevotionalRow): DevotionalInput {
     scriptureReference: row.scripture_reference,
     scriptureText: row.scripture_text ?? "",
     reflection: row.reflection,
+    reflectionQuestion: row.reflection_question ?? "",
+    prayer: row.prayer ?? "",
   };
 }
 
@@ -122,9 +128,30 @@ function DevotionalDialog({
             <Label htmlFor="devotional-reflection">Reflection</Label>
             <Textarea
               id="devotional-reflection"
-              rows={6}
+              rows={8}
               value={draft.reflection}
               onChange={(e) => setDraft((d) => ({ ...d, reflection: e.target.value }))}
+              placeholder="Open with a short, relatable story, connect it to the passage, then close with how it applies this week."
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="devotional-question">Reflect &amp; Pray — question (optional)</Label>
+            <Textarea
+              id="devotional-question"
+              rows={2}
+              value={draft.reflectionQuestion}
+              onChange={(e) => setDraft((d) => ({ ...d, reflectionQuestion: e.target.value }))}
+              placeholder="A question to sit with, not just answer quickly."
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="devotional-prayer">Reflect &amp; Pray — prayer (optional)</Label>
+            <Textarea
+              id="devotional-prayer"
+              rows={2}
+              value={draft.prayer}
+              onChange={(e) => setDraft((d) => ({ ...d, prayer: e.target.value }))}
+              placeholder="A short, first-person closing prayer."
             />
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}

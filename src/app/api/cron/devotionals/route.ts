@@ -11,6 +11,8 @@ type Devotional = {
   scripture_reference: string;
   scripture_text: string | null;
   reflection: string;
+  reflection_question: string | null;
+  prayer: string | null;
   sort_order: number;
 };
 
@@ -26,7 +28,9 @@ async function pickNextDevotional(
 ): Promise<Devotional | null> {
   const { data: devotionals } = await admin
     .from("devotionals")
-    .select("id, title, scripture_reference, scripture_text, reflection, sort_order")
+    .select(
+      "id, title, scripture_reference, scripture_text, reflection, reflection_question, prayer, sort_order"
+    )
     .eq("org_id", orgId)
     .order("sort_order", { ascending: true });
   if (!devotionals || devotionals.length === 0) return null;
@@ -81,13 +85,20 @@ async function sendDevotionalForOrg(
     scriptureReference: devotional.scripture_reference,
     scriptureText: devotional.scripture_text,
     reflection: devotional.reflection,
+    reflectionQuestion: devotional.reflection_question,
+    prayer: devotional.prayer,
   });
+  // The full multi-paragraph reflection reads well in email but doesn't fit
+  // a text message — send the opening hook and the closing prayer instead
+  // of the whole thing, pointing to email for the rest.
+  const openingLine = devotional.reflection.split(/\n\s*\n/)[0];
   const smsText = [
     `📖 ${devotional.title}`,
     devotional.scripture_reference,
     devotional.scripture_text ? `"${devotional.scripture_text}"` : null,
     "",
-    devotional.reflection,
+    openingLine,
+    devotional.prayer ? `\nPrayer: ${devotional.prayer}` : null,
   ]
     .filter((line): line is string => line !== null)
     .join("\n");

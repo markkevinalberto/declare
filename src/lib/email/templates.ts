@@ -111,7 +111,17 @@ export function devotionalEmail(opts: {
   scriptureReference: string;
   scriptureText: string | null;
   reflection: string;
+  reflectionQuestion: string | null;
+  prayer: string | null;
 }) {
+  // Paragraphs are separated by blank lines (see the devotional library's
+  // Reflection field) — split them out so each renders as its own <p>
+  // instead of one run-on block, matching how a printed devotional reads.
+  const reflectionHtml = opts.reflection
+    .split(/\n\s*\n/)
+    .map((p) => `<p style="margin:0 0 12px;">${p.trim()}</p>`)
+    .join("");
+
   return {
     subject: `This week's devotional: ${opts.title}`,
     html: layout(
@@ -125,7 +135,17 @@ export function devotionalEmail(opts: {
           ? `<p style="font-style:italic;color:#3f3f46;border-left:3px solid #e4e4e7;padding-left:12px;margin:0 0 16px;white-space:pre-wrap;">${opts.scriptureText}</p>`
           : ""
       }
-      <p style="white-space:pre-wrap;margin:0;">${opts.reflection}</p>
+      ${reflectionHtml}
+      ${
+        opts.reflectionQuestion || opts.prayer
+          ? `
+      <div style="margin-top:20px;padding:16px;background:#f4f4f5;border-radius:10px;">
+        <p style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#71717a;margin:0 0 10px;">Reflect &amp; Pray</p>
+        ${opts.reflectionQuestion ? `<p style="margin:0 0 ${opts.prayer ? "10px" : "0"};">${opts.reflectionQuestion}</p>` : ""}
+        ${opts.prayer ? `<p style="font-style:italic;color:#3f3f46;margin:0;">${opts.prayer}</p>` : ""}
+      </div>`
+          : ""
+      }
       `
     ),
   };

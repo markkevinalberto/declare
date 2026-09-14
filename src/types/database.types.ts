@@ -714,6 +714,8 @@ export interface Database {
           scripture_reference: string;
           scripture_text: string | null;
           reflection: string;
+          reflection_question: string | null;
+          prayer: string | null;
           sort_order: number;
           created_by: string | null;
           created_at: string;
@@ -725,6 +727,8 @@ export interface Database {
           scripture_reference: string;
           scripture_text?: string | null;
           reflection: string;
+          reflection_question?: string | null;
+          prayer?: string | null;
           sort_order?: number;
           created_by?: string | null;
           created_at?: string;

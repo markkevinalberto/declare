@@ -12,6 +12,8 @@ const devotionalSchema = z.object({
   scriptureReference: z.string().min(1, "Scripture reference is required."),
   scriptureText: z.string().optional(),
   reflection: z.string().min(1, "Reflection is required."),
+  reflectionQuestion: z.string().optional(),
+  prayer: z.string().optional(),
 });
 
 export type DevotionalInput = {
@@ -19,6 +21,8 @@ export type DevotionalInput = {
   scriptureReference: string;
   scriptureText: string;
   reflection: string;
+  reflectionQuestion: string;
+  prayer: string;
 };
 
 export async function createDevotional(input: DevotionalInput): Promise<DevotionalActionState> {
@@ -41,6 +45,8 @@ export async function createDevotional(input: DevotionalInput): Promise<Devotion
     scripture_reference: parsed.data.scriptureReference,
     scripture_text: parsed.data.scriptureText?.trim() || null,
     reflection: parsed.data.reflection,
+    reflection_question: parsed.data.reflectionQuestion?.trim() || null,
+    prayer: parsed.data.prayer?.trim() || null,
     sort_order: (last?.sort_order ?? 0) + 1,
     created_by: profile.id,
   });
@@ -66,6 +72,8 @@ export async function updateDevotional(
       scripture_reference: parsed.data.scriptureReference,
       scripture_text: parsed.data.scriptureText?.trim() || null,
       reflection: parsed.data.reflection,
+      reflection_question: parsed.data.reflectionQuestion?.trim() || null,
+      prayer: parsed.data.prayer?.trim() || null,
     })
     .eq("id", id)
     .eq("org_id", profile.org_id);
