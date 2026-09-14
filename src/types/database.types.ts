@@ -813,6 +813,10 @@ export interface Database {
         Args: { p_name: string; p_timezone?: string };
         Returns: string;
       };
+      seed_default_devotionals: {
+        Args: { p_org_id: string };
+        Returns: void;
+      };
       accept_org_invite: {
         Args: { p_token: string };
         Returns: string;

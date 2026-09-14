@@ -25,11 +25,18 @@ export async function createOrganization(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("create_organization", {
+  const { data: orgId, error } = await supabase.rpc("create_organization", {
     p_name: parsed.data.name,
     p_timezone: parsed.data.timezone,
   });
   if (error) return { error: error.message };
+
+  // Gives the new org a ready-to-go weekly devotional library (see
+  // supabase/migrations/0044_default_devotionals.sql) without needing its
+  // admin to write anything — the devotional feature stays off until they
+  // choose to turn it on in Settings, but the content is there the moment
+  // they do.
+  if (orgId) await supabase.rpc("seed_default_devotionals", { p_org_id: orgId });
 
   redirect("/dashboard");
 }
