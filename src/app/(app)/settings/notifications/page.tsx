@@ -17,6 +17,7 @@ const CATEGORIES = [
   { key: "service_updated", label: "Service updated", description: "When details change for a service you're on." },
   { key: "service_cancelled", label: "Service cancelled", description: "When a service you're scheduled for is cancelled." },
   { key: "position_removed", label: "Removed from a position", description: "When a leader removes you from a role." },
+  { key: "devotional", label: "Weekly devotional", description: "Every Sunday morning, if your church has this turned on." },
 ] as const;
 
 export default async function NotificationPreferencesPage() {

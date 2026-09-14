@@ -21,7 +21,8 @@ export type NotificationType =
   | "message"
   | "service_updated"
   | "service_cancelled"
-  | "position_removed";
+  | "position_removed"
+  | "devotional";
 export type RecurrenceFrequency = "weekly" | "biweekly" | "monthly";
 
 export interface Database {
@@ -34,6 +35,7 @@ export interface Database {
           logo_url: string | null;
           timezone: string;
           join_token: string | null;
+          devotionals_enabled: boolean;
           created_at: string;
         };
         Insert: {
@@ -42,6 +44,7 @@ export interface Database {
           logo_url?: string | null;
           timezone?: string;
           join_token?: string | null;
+          devotionals_enabled?: boolean;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["organizations"]["Insert"]>;
@@ -699,6 +702,82 @@ export interface Database {
             columns: ["updated_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      devotionals: {
+        Row: {
+          id: string;
+          org_id: string;
+          title: string;
+          scripture_reference: string;
+          scripture_text: string | null;
+          reflection: string;
+          sort_order: number;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          title: string;
+          scripture_reference: string;
+          scripture_text?: string | null;
+          reflection: string;
+          sort_order?: number;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["devotionals"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "devotionals_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "devotionals_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      devotional_log: {
+        Row: {
+          id: string;
+          org_id: string;
+          devotional_id: string | null;
+          sent_on: string;
+          recipient_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          org_id: string;
+          devotional_id?: string | null;
+          sent_on: string;
+          recipient_count?: number;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["devotional_log"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "devotional_log_org_id_fkey";
+            columns: ["org_id"];
+            isOneToOne: false;
+            referencedRelation: "organizations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "devotional_log_devotional_id_fkey";
+            columns: ["devotional_id"];
+            isOneToOne: false;
+            referencedRelation: "devotionals";
             referencedColumns: ["id"];
           }
         ];

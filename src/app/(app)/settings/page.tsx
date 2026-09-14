@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquareText } from "lucide-react";
+import { BookOpen, MessageSquareText } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -93,6 +93,21 @@ export default async function SettingsPage() {
         <CardContent>
           <Button variant="outline" nativeButton={false} render={<Link href="/settings/sms-templates" />}>
             <MessageSquareText /> Edit templates
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Weekly devotional</CardTitle>
+          <CardDescription>
+            Email and text your whole team a Bible devotional every Sunday
+            morning.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="outline" nativeButton={false} render={<Link href="/settings/devotionals" />}>
+            <BookOpen /> Manage devotionals
           </Button>
         </CardContent>
       </Card>

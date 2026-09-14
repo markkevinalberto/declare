@@ -105,6 +105,32 @@ export function positionResponseEmail(opts: {
   };
 }
 
+export function devotionalEmail(opts: {
+  orgName: string;
+  title: string;
+  scriptureReference: string;
+  scriptureText: string | null;
+  reflection: string;
+}) {
+  return {
+    subject: `This week's devotional: ${opts.title}`,
+    html: layout(
+      opts.orgName,
+      `${opts.title} — ${opts.scriptureReference}`,
+      `
+      <p style="font-size:17px;font-weight:600;margin:0 0 6px;">${opts.title}</p>
+      <p style="color:#245BFF;font-weight:600;font-size:13px;margin:0 0 16px;">${opts.scriptureReference}</p>
+      ${
+        opts.scriptureText
+          ? `<p style="font-style:italic;color:#3f3f46;border-left:3px solid #e4e4e7;padding-left:12px;margin:0 0 16px;white-space:pre-wrap;">${opts.scriptureText}</p>`
+          : ""
+      }
+      <p style="white-space:pre-wrap;margin:0;">${opts.reflection}</p>
+      `
+    ),
+  };
+}
+
 export function reminderEmail(opts: {
   orgName: string;
   volunteerName: string;
