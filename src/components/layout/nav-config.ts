@@ -7,6 +7,7 @@ import {
   Music,
   Settings,
   CalendarOff,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 import { FEATURES } from "@/lib/features";
@@ -16,10 +17,12 @@ export type NavItem = {
   label: string;
   icon: LucideIcon;
   schedulerOnly?: boolean;
+  devotionalOnly?: boolean;
 };
 
 export const primaryNav: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/devotional", label: "Devotional", icon: BookOpen, devotionalOnly: true },
   { href: "/services", label: "Services", icon: CalendarDays },
   // The song library only has a purpose when something can consume it (the
   // plan builder or the presenter) — hidden along with those, not deleted.

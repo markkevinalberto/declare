@@ -30,13 +30,19 @@ function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void 
 export function SidebarNav({
   isScheduler,
   isAdmin,
+  showDevotional,
   onNavigate,
 }: {
   isScheduler: boolean;
   isAdmin: boolean;
+  showDevotional: boolean;
   onNavigate?: () => void;
 }) {
-  const items = primaryNav.filter((item) => !item.schedulerOnly || isScheduler);
+  const items = primaryNav.filter(
+    (item) =>
+      (!item.schedulerOnly || isScheduler) &&
+      (!item.devotionalOnly || showDevotional)
+  );
 
   return (
     <nav className="flex flex-1 flex-col gap-1 p-3">

@@ -17,7 +17,7 @@ export default async function AppLayout({
   const [{ data: org }, { count: unreadCount }] = await Promise.all([
     supabase
       .from("organizations")
-      .select("name")
+      .select("name, devotionals_enabled")
       .eq("id", profile.org_id)
       .single(),
     supabase
@@ -35,6 +35,7 @@ export default async function AppLayout({
       isScheduler={isScheduler}
       isAdmin={profile.role === "admin"}
       isSuperAdmin={profile.is_super_admin}
+      showDevotional={org?.devotionals_enabled ?? false}
       unreadCount={unreadCount ?? 0}
       userName={profile.name || profile.email}
       userEmail={profile.email}

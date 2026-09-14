@@ -87,7 +87,7 @@ function DevotionalDialog({
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{editing === "new" ? "Add devotional" : "Edit devotional"}</DialogTitle>
           <DialogDescription>

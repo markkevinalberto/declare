@@ -29,6 +29,7 @@ export function AppShell({
   isScheduler,
   isAdmin,
   isSuperAdmin,
+  showDevotional,
   unreadCount,
   userName,
   userEmail,
@@ -39,6 +40,7 @@ export function AppShell({
   isScheduler: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  showDevotional: boolean;
   unreadCount: number;
   userName: string;
   userEmail: string;
@@ -60,7 +62,11 @@ export function AppShell({
             <span className="truncate text-sm font-semibold">{orgName}</span>
           </span>
         </div>
-        <SidebarNav isScheduler={isScheduler} isAdmin={isAdmin} />
+        <SidebarNav
+          isScheduler={isScheduler}
+          isAdmin={isAdmin}
+          showDevotional={showDevotional}
+        />
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -78,6 +84,7 @@ export function AppShell({
           <SidebarNav
             isScheduler={isScheduler}
             isAdmin={isAdmin}
+            showDevotional={showDevotional}
             onNavigate={() => setMobileOpen(false)}
           />
         </SheetContent>
