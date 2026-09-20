@@ -151,7 +151,7 @@ async function dispatchInvite(positionId: string) {
             acceptUrl,
             declineUrl,
           });
-          return sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
+          return sendEmail({ to: volunteer.email, subject, html });
         })()
       : Promise.resolve(),
     volunteer.phone && smsEnabled

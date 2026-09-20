@@ -102,7 +102,7 @@ async function sendRemindersForWindow(
           status: position.status as "invited" | "accepted",
           respondUrl,
         });
-        await sendEmail({ to: volunteer.email, subject, html, fromName: orgName });
+        await sendEmail({ to: volunteer.email, subject, html });
       }
 
       if (smsEnabled && volunteer.phone) {

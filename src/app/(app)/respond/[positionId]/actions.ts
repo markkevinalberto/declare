@@ -66,7 +66,7 @@ export async function respondToPosition(
         status: newStatus,
         serviceUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/services/${position.service_id}`,
       });
-      await sendEmail({ to: leader.email, subject, html, fromName: orgName });
+      await sendEmail({ to: leader.email, subject, html });
     }
   }
 

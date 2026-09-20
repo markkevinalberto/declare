@@ -113,7 +113,7 @@ async function sendDevotionalForOrg(
       .maybeSingle();
 
     if (pref?.email_enabled !== false) {
-      await sendEmail({ to: person.email, subject, html, fromName: org.name });
+      await sendEmail({ to: person.email, subject, html });
     }
     if (person.phone) {
       await sendSms(person.phone, smsText);

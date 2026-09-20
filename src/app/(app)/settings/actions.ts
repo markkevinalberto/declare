@@ -96,12 +96,7 @@ export async function createInvite(
     role: parsed.data.role,
     acceptUrl: `${siteUrl}/invite/${invite.token}`,
   });
-  await sendEmail({
-    to: parsed.data.email,
-    subject,
-    html,
-    fromName: org?.name ?? undefined,
-  });
+  await sendEmail({ to: parsed.data.email, subject, html });
 
   revalidatePath("/settings");
   return { success: `Invite sent to ${parsed.data.email}.` };
