@@ -1,7 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/invite", "/plan", "/join", "/privacy"];
+// /api/cron routes authenticate their own way (a CRON_SECRET bearer token
+// checked inside each route handler) — they're never called with a user
+// session, so without this they'd get redirected to /login before the
+// route handler ever runs. That's exactly what was silently breaking every
+// cron job (reminders included) up to now.
+const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/invite", "/plan", "/join", "/privacy", "/api/cron"];
 
 /**
  * Set to the just-validated user's id once this middleware confirms the
