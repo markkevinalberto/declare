@@ -11,6 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CardIcon } from "@/components/shared/card-icon";
+import { DevotionalPreviewCard } from "@/components/shared/devotional-preview-card";
 
 type ServiceRow = { id: string; title: string; starts_at: string; campus: string | null };
 type PositionRow = {
@@ -29,14 +31,6 @@ function EmptyState({ icon: Icon, message }: { icon: typeof CalendarDays; messag
       <Icon className="size-6" />
       <p>{message}</p>
     </div>
-  );
-}
-
-function CardIcon({ icon: Icon }: { icon: typeof CalendarDays }) {
-  return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-chart-2 shadow-sm shadow-primary/25">
-      <Icon className="size-4.5 text-primary-foreground" />
-    </span>
   );
 }
 
@@ -84,6 +78,8 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-sm text-muted-foreground">Here&apos;s what&apos;s coming up.</p>
         </div>
+
+        <DevotionalPreviewCard />
 
         {pendingInvites.length > 0 ? (
           <Card className="animate-fade-up">
@@ -180,6 +176,8 @@ export default async function DashboardPage() {
         </h1>
         <p className="text-sm text-muted-foreground">Here&apos;s what&apos;s coming up.</p>
       </div>
+
+      <DevotionalPreviewCard />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="animate-fade-up">

@@ -1,3 +1,4 @@
+import { format, parseISO } from "date-fns";
 import {
   Card,
   CardContent,
@@ -14,7 +15,7 @@ export default async function DevotionalsPage() {
   const profile = await requireAdmin();
   const supabase = await createClient();
 
-  const [{ data: org }, { data: devotionals }] = await Promise.all([
+  const [{ data: org }, { data: devotionals }, { data: lastLog }] = await Promise.all([
     supabase
       .from("organizations")
       .select("devotionals_enabled, timezone")
@@ -27,9 +28,20 @@ export default async function DevotionalsPage() {
       )
       .eq("org_id", profile.org_id)
       .order("sort_order", { ascending: true }),
+    supabase
+      .from("devotional_log")
+      .select("sent_on, recipient_count, devotionals(title, scripture_reference)")
+      .eq("org_id", profile.org_id)
+      .order("sent_on", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const rows = (devotionals ?? []) as DevotionalRow[];
+  const lastSent = lastLog?.devotionals as unknown as {
+    title: string;
+    scripture_reference: string;
+  } | null;
 
   return (
     <div className="grid max-w-2xl gap-6">
@@ -50,11 +62,19 @@ export default async function DevotionalsPage() {
             anyone with a mobile number on file.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="grid gap-3">
           <DevotionalsEnabledToggle
             initialEnabled={org?.devotionals_enabled ?? false}
             hasDevotionals={rows.length > 0}
           />
+          {lastSent && lastLog ? (
+            <p className="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+              Last sent {format(parseISO(lastLog.sent_on), "EEEE, MMMM d")} —{" "}
+              <span className="font-medium text-foreground">{lastSent.title}</span>{" "}
+              ({lastSent.scripture_reference}) to {lastLog.recipient_count}{" "}
+              {lastLog.recipient_count === 1 ? "person" : "people"}.
+            </p>
+          ) : null}
         </CardContent>
       </Card>
 

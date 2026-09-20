@@ -1,5 +1,6 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { DevotionalPreviewCard } from "@/components/shared/devotional-preview-card";
 import { ServicesView } from "./services-view";
 import { NewServiceButton } from "./new-service-button";
 
@@ -29,6 +30,8 @@ export default async function ServicesPage() {
         </div>
         {isScheduler ? <NewServiceButton /> : null}
       </div>
+
+      <DevotionalPreviewCard />
 
       <ServicesView services={services ?? []} isScheduler={isScheduler} timezone={timezone} />
     </div>
