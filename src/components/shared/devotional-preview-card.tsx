@@ -48,22 +48,22 @@ export async function DevotionalPreviewCard() {
       <CardContent>
         <Link
           href="/devotional"
-          className="group relative block overflow-hidden rounded-xl bg-gradient-to-br from-primary to-chart-2 p-4 text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/30"
+          className="group relative block overflow-hidden rounded-xl bg-gradient-to-br from-primary to-chart-2 p-4 text-slate-900 shadow-sm shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/30"
         >
-          <Quote className="absolute -top-3 -right-2 size-20 rotate-12 text-white/10" />
-          <p className="relative text-[11px] font-semibold tracking-wider text-primary-foreground/80 uppercase">
+          <Quote className="absolute -top-3 -right-2 size-20 rotate-12 text-slate-900/10" />
+          <p className="relative text-[11px] font-semibold tracking-wider text-slate-900/70 uppercase">
             {devotional.scripture_reference}
           </p>
           <p className="relative mt-1 truncate text-base font-semibold tracking-tight">
             {devotional.title}
           </p>
           {devotional.scripture_text ? (
-            <p className="relative mt-2 line-clamp-2 border-l-2 border-white/40 pl-2.5 text-sm leading-relaxed text-primary-foreground/90 italic">
+            <p className="relative mt-2 line-clamp-2 border-l-2 border-slate-900/25 pl-2.5 text-sm leading-relaxed text-slate-900/85 italic">
               {devotional.scripture_text}
             </p>
           ) : null}
-          <span className="relative mt-3 flex items-center gap-1 text-xs font-medium text-primary-foreground/80 group-hover:text-primary-foreground">
-            Read the full devotional
+          <span className="relative mt-3 flex items-center gap-1 text-xs font-medium text-slate-900/70 group-hover:text-slate-900">
+            Read the full devotional — {devotional.scripture_reference}
             <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
           </span>
         </Link>

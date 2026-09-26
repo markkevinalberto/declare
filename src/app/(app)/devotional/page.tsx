@@ -55,17 +55,20 @@ export default async function DevotionalPage() {
         </Card>
       ) : (
         <Card className="animate-fade-up overflow-hidden py-0">
-          <div className="relative overflow-hidden bg-gradient-to-br from-primary to-chart-2 px-6 py-8 text-primary-foreground">
-            <Quote className="absolute -top-3 -right-3 size-28 rotate-12 text-white/10" />
-            <p className="relative text-xs font-semibold tracking-wider text-primary-foreground/80 uppercase">
+          <div className="relative overflow-hidden bg-gradient-to-br from-primary to-chart-2 px-6 py-8 text-slate-900">
+            <Quote className="absolute -top-3 -right-3 size-28 rotate-12 text-slate-900/10" />
+            <p className="relative text-xs font-semibold tracking-wider text-slate-900/70 uppercase">
               {devotional.scripture_reference}
             </p>
             <h2 className="relative mt-1 text-2xl font-semibold tracking-tight text-balance">
               {devotional.title}
             </h2>
             {devotional.scripture_text ? (
-              <p className="relative mt-4 border-l-2 border-white/40 pl-3 text-sm leading-relaxed whitespace-pre-wrap text-primary-foreground/90 italic">
+              <p className="relative mt-4 border-l-2 border-slate-900/25 pl-3 text-sm leading-relaxed whitespace-pre-wrap text-slate-900/85 italic">
                 {devotional.scripture_text}
+                <span className="mt-1 block text-xs font-semibold not-italic text-slate-900/60">
+                  — {devotional.scripture_reference}
+                </span>
               </p>
             ) : null}
           </div>

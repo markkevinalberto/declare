@@ -132,7 +132,7 @@ export function devotionalEmail(opts: {
       <p style="color:#245BFF;font-weight:600;font-size:13px;margin:0 0 16px;">${opts.scriptureReference}</p>
       ${
         opts.scriptureText
-          ? `<p style="font-style:italic;color:#3f3f46;border-left:3px solid #e4e4e7;padding-left:12px;margin:0 0 16px;white-space:pre-wrap;">${opts.scriptureText}</p>`
+          ? `<p style="font-style:italic;color:#3f3f46;border-left:3px solid #e4e4e7;padding-left:12px;margin:0 0 16px;white-space:pre-wrap;">${opts.scriptureText}<br><span style="font-style:normal;font-weight:600;font-size:12px;color:#71717a;">— ${opts.scriptureReference}</span></p>`
           : ""
       }
       ${reflectionHtml}
