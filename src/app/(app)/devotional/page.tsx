@@ -3,6 +3,7 @@ import { BookOpen, Heart, HelpCircle, Quote, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { ListenButton } from "./listen-button";
 import { PrayedCheck } from "./prayed-check";
 
 type DevotionalDetail = {
@@ -29,6 +30,18 @@ export default async function DevotionalPage() {
     .maybeSingle();
 
   const devotional = lastLog?.devotionals as unknown as DevotionalDetail | null;
+  const speechText = devotional
+    ? [
+        devotional.title,
+        devotional.scripture_reference,
+        devotional.scripture_text,
+        devotional.reflection,
+        devotional.reflection_question,
+        devotional.prayer ? `Prayer. ${devotional.prayer}` : null,
+      ]
+        .filter((part): part is string => Boolean(part))
+        .join(". ")
+    : "";
 
   return (
     <div className="mx-auto grid max-w-2xl gap-4">
@@ -74,6 +87,8 @@ export default async function DevotionalPage() {
           </div>
 
           <CardContent className="grid gap-4 py-6">
+            <ListenButton text={speechText} />
+
             <div className="grid gap-3 text-[15px] leading-relaxed text-foreground/90">
               {devotional.reflection.split(/\n\s*\n/).map((paragraph, i) => (
                 <p key={i}>{paragraph}</p>
