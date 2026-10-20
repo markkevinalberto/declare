@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Bell, CheckCircle2, CircleHelp, Send, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { mascotFor } from "@/lib/mascots";
+import { distinctMascots, mascotFor } from "@/lib/mascots";
 import { resendAllPendingInvites, sendAllInvites } from "./position-actions";
 import { RoleScheduleRow } from "./role-schedule-row";
 
@@ -106,6 +106,13 @@ export function PeopleTab({
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(undefined);
   const activeGroupId = selectedGroupId ?? defaultGroupId;
   const activeGroup = groupsWithData.find((g) => g.group.id === activeGroupId);
+  const teamMascot = activeGroup ? mascotFor(activeGroup.group.name) : null;
+  const roleMascots = activeGroup
+    ? distinctMascots(
+        activeGroup.roles.map((r) => [r.name, activeGroup.group.name]),
+        teamMascot ? [teamMascot] : []
+      )
+    : [];
 
   const totalCounts = countStatuses(positions);
   const draftCount = totalCounts.draft;
@@ -184,7 +191,7 @@ export function PeopleTab({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={activeGroup.group.id}
-              src={mascotFor(activeGroup.group.name)}
+              src={teamMascot ?? undefined}
               alt=""
               aria-hidden="true"
               className="animate-fade-up pointer-events-none mt-4 hidden h-52 w-auto justify-self-center drop-shadow-lg md:block"
@@ -194,7 +201,7 @@ export function PeopleTab({
 
         <div className="grid content-start gap-4">
           <p className="text-sm font-semibold">Roles</p>
-          {activeGroup?.roles.map((role) => {
+          {activeGroup?.roles.map((role, i) => {
             const rolePositions = positions.filter((p) => p.role_id === role.id);
             const candidates = people.filter((person) =>
               userRoles.some((ur) => ur.role_id === role.id && ur.user_id === person.id)
@@ -208,7 +215,7 @@ export function PeopleTab({
                 serviceId={serviceId}
                 roleId={role.id}
                 roleName={role.name}
-                mascot={mascotFor(role.name, activeGroup?.group.name ?? "")}
+                mascot={roleMascots[i]}
                 positions={rolePositions}
                 candidates={candidates}
                 isScheduler={isScheduler}
