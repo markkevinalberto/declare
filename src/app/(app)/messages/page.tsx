@@ -1,6 +1,6 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { ThreadList } from "./thread-list";
 import { NewThreadDialog } from "./new-thread-dialog";
 
@@ -79,18 +79,16 @@ export default async function MessagesPage() {
 
   return (
     <div className="grid max-w-xl gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Messages</h1>
-          <p className="text-sm text-muted-foreground">
-            Team chat by role group, role, or service.
-          </p>
-        </div>
-        <PageMascot src="/mascot/heart.png" />
-        {isScheduler ? (
-          <NewThreadDialog groups={groups} roles={roles} services={services} timezone={timezone} />
-        ) : null}
-      </div>
+      <PageHero
+        title="Messages"
+        description="Team chat by role group, role, or service."
+        mascot="/mascot/full/boy_headset_walkie.png"
+        actions={
+          isScheduler ? (
+            <NewThreadDialog groups={groups} roles={roles} services={services} timezone={timezone} />
+          ) : null
+        }
+      />
 
       <ThreadList threads={rows} />
     </div>

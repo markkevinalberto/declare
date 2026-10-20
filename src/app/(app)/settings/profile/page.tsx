@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { ProfileForm } from "./profile-form";
 import { LeaveOrgDialog } from "./leave-org-dialog";
 
@@ -22,10 +22,11 @@ export default async function ProfileSettingsPage() {
 
   return (
     <div className="grid max-w-md gap-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">My profile</h1>
-        <PageMascot src="/mascot/mm_thumbsup.png" />
-      </div>
+      <PageHero
+        title="My profile"
+        description="How your team sees and reaches you."
+        mascot="/mascot/full/boy_sitting_laptop.png"
+      />
       <Card>
         <CardHeader>
           <CardTitle>Personal details</CardTitle>

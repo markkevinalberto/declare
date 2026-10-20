@@ -1,4 +1,20 @@
-function layout(orgName: string, preheader: string, bodyHtml: string) {
+// Full-body mascot stickers, served from the deployed app so inboxes can load
+// them (a localhost fallback would break every image outside dev)
+type Sticker =
+  | "girl_tablet_wave"
+  | "boy_thumbs_tablet"
+  | "duo_thumbs_peace"
+  | "boy_sitting_laptop"
+  | "duo_hug"
+  | "girl_idea"
+  | "boy_running";
+
+function stickerUrl(name: Sticker) {
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://declare-cyan.vercel.app";
+  return `${base}/mascot/full/${name}.png`;
+}
+
+function layout(orgName: string, preheader: string, bodyHtml: string, sticker: Sticker) {
   return `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
@@ -8,9 +24,19 @@ function layout(orgName: string, preheader: string, bodyHtml: string) {
         <td align="center">
           <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
             <tr>
-              <td style="padding:24px 28px 8px;">
-                <div style="font-size:15px;font-weight:600;color:#08121F;">${orgName}</div>
+              <td style="padding:16px 20px 0 28px;background:#eef3ff;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td valign="middle" style="font-size:15px;font-weight:600;color:#08121F;">${orgName}</td>
+                    <td valign="bottom" align="right" width="120">
+                      <img src="${stickerUrl(sticker)}" width="110" alt="" style="display:block;width:110px;height:auto;border:0;" />
+                    </td>
+                  </tr>
+                </table>
               </td>
+            </tr>
+            <tr>
+              <td style="padding:0;height:20px;line-height:20px;font-size:0;">&nbsp;</td>
             </tr>
             <tr>
               <td style="padding:8px 28px 28px;color:#27272a;font-size:14px;line-height:1.6;">
@@ -49,7 +75,8 @@ export function orgInviteEmail(opts: {
       <p><strong>${opts.inviterName}</strong> invited you to join <strong>${opts.orgName}</strong> as a <strong>${opts.role}</strong>.</p>
       <p style="margin:24px 0;">${button(opts.acceptUrl, "Accept invite")}</p>
       <p style="color:#71717a;font-size:12px;">If you weren't expecting this, you can ignore this email.</p>
-      `
+      `,
+      "girl_tablet_wave"
     ),
   };
 }
@@ -76,7 +103,8 @@ export function positionInviteEmail(opts: {
         &nbsp;&nbsp;
         ${button(opts.declineUrl, "Decline", "#dc2626")}
       </p>
-      `
+      `,
+      "boy_thumbs_tablet"
     ),
   };
 }
@@ -100,7 +128,8 @@ export function positionResponseEmail(opts: {
       <p>Hi ${opts.leaderName},</p>
       <p><strong>${opts.volunteerName}</strong> has <strong>${verb}</strong> the <strong>${opts.roleName}</strong> position for <strong>${opts.serviceTitle}</strong>.</p>
       <p style="margin:24px 0;">${button(opts.serviceUrl, "View service")}</p>
-      `
+      `,
+      opts.status === "accepted" ? "duo_thumbs_peace" : "boy_sitting_laptop"
     ),
   };
 }
@@ -146,7 +175,8 @@ export function devotionalEmail(opts: {
       </div>`
           : ""
       }
-      `
+      `,
+      "duo_hug"
     ),
   };
 }
@@ -178,7 +208,8 @@ export function reminderEmail(opts: {
           : `Just a reminder that you're serving as <strong>${opts.roleName}</strong> for <strong>${opts.serviceTitle}</strong> on ${opts.serviceDate}, which is ${opts.daysAway} day${opts.daysAway === 1 ? "" : "s"} away.`
       }</p>
       <p style="margin:24px 0;">${button(opts.respondUrl, opts.status === "invited" ? "Respond now" : "View details")}</p>
-      `
+      `,
+      opts.status === "invited" ? "girl_idea" : "boy_running"
     ),
   };
 }

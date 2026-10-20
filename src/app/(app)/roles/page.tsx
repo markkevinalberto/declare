@@ -1,6 +1,6 @@
 import { requireScheduler } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { RoleGroupList } from "./role-group-list";
 import { NewRoleGroupButton } from "./new-role-group-button";
 
@@ -36,16 +36,12 @@ export default async function RolesPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Roles</h1>
-          <p className="text-sm text-muted-foreground">
-            Group roles under teams, like Worship Team → Vocals, Drums, Bass.
-          </p>
-        </div>
-        <PageMascot src="/mascot/clipboard.png" />
-        {isAdmin ? <NewRoleGroupButton /> : null}
-      </div>
+      <PageHero
+        title="Roles"
+        description="Group roles under teams, like Worship Team → Vocals, Drums, Bass."
+        mascot="/mascot/full/duo_headset.png"
+        actions={isAdmin ? <NewRoleGroupButton /> : null}
+      />
 
       <RoleGroupList
         groups={groups ?? []}

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { TEMPLATE_DEFS, TEMPLATE_KEYS } from "@/lib/sms-template-defs";
 import { SmsTemplateEditor, type TemplateRow } from "./sms-template-editor";
 
@@ -38,16 +38,11 @@ export default async function SmsTemplatesPage() {
 
   return (
     <div className="grid max-w-2xl gap-4">
-      <div className="flex items-center gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">SMS message templates</h1>
-          <p className="text-sm text-muted-foreground">
-            Customize the wording of every automatic text message Declare sends
-            to your team&apos;s mobile numbers.
-          </p>
-        </div>
-        <PageMascot src="/mascot/cheer.png" />
-      </div>
+      <PageHero
+        title="SMS message templates"
+        description="Customize the wording of every automatic text message Declare sends to your team's mobile numbers."
+        mascot="/mascot/full/girl_running_tablet.png"
+      />
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Reminder texts</CardTitle>

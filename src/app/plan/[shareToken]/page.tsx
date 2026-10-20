@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Church, MapPin, Music } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatInOrgTime } from "@/lib/org-time";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { PrintButton } from "./print-button";
 
 function formatMinutes(total: number) {
@@ -46,20 +46,21 @@ export default async function SharedPlanPage({
         <PrintButton />
       </div>
 
-      <div className="flex items-center gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{service.title}</h1>
-          <p className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
+      <PageHero
+        className="mt-10 print:mt-0 print:min-h-0 print:pr-0"
+        title={service.title}
+        description={
+          <span className="mt-1 flex flex-wrap items-center gap-x-3">
             <span>{formatInOrgTime(service.starts_at, service.timezone, "EEEE, MMMM d, yyyy · h:mm a")}</span>
             {service.campus ? (
               <span className="flex items-center gap-1">
                 <MapPin className="size-3.5" /> {service.campus}
               </span>
             ) : null}
-          </p>
-        </div>
-        <PageMascot src="/mascot/clipboard.png" className="-mt-2 md:-mt-2 print:hidden!" />
-      </div>
+          </span>
+        }
+        mascot="/mascot/full/duo_case.png"
+      />
       {service.notes ? (
         <p className="mt-2 text-sm text-muted-foreground">{service.notes}</p>
       ) : null}

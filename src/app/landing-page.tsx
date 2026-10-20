@@ -5,6 +5,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FEATURES as FEATURE_FLAGS } from "@/lib/features";
 import { LandingHeroVisual } from "./landing-hero-visual";
+import { LandingVideo } from "./landing-video";
 import { RosterReelPlayer } from "@/components/remotion/roster-reel-player";
 import type { RosterReelProps } from "@/components/remotion/roster-reel";
 import { distinctMascots } from "@/lib/mascots";
@@ -150,9 +151,9 @@ export function LandingPage() {
               <Link href="/signup" className={buttonVariants({ size: "lg" })}>
                 Get started free
               </Link>
-              <Link href="/login" className={buttonVariants({ variant: "outline", size: "lg" })}>
-                Sign in
-              </Link>
+              <a href="#tour" className={buttonVariants({ variant: "outline", size: "lg" })}>
+                Watch the tour
+              </a>
             </div>
           </div>
 
@@ -164,7 +165,7 @@ export function LandingPage() {
             {/* Peeks over the top-right corner, above the reel's empty header edge */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/mascot/hero_thumbsup.png"
+              src="/mascot/full/boy_thumbs_tablet.png"
               alt=""
               aria-hidden="true"
               className="mascot-float pointer-events-none absolute -right-2 -top-12 z-20 h-28 w-auto drop-shadow-xl sm:-right-4 sm:-top-20 sm:h-36 lg:-right-8 lg:-top-28 lg:h-48"
@@ -176,11 +177,44 @@ export function LandingPage() {
           <LandingMarquee />
         </div>
 
+        <section id="tour" className="mx-auto max-w-5xl scroll-mt-24 px-6 pt-24">
+          {/* Two camera operators "filming" the tour from either side of the heading */}
+          <div className="relative mb-8 px-20 text-center sm:px-36">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mascot/full/boy_dslr.png"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-0 left-0 h-20 w-auto drop-shadow-lg sm:h-32"
+            />
+            <p className="text-xs font-semibold tracking-wider text-primary uppercase">See it in action</p>
+            <h2 className="mt-2 font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+              Declare in under a minute
+            </h2>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mascot/full/girl_dslr.png"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute right-0 bottom-0 h-20 w-auto drop-shadow-lg sm:h-32"
+            />
+          </div>
+          <LandingVideo />
+        </section>
+
         <section className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
           <LandingFeatureShowcase features={FEATURES} />
         </section>
 
-        <section className="border-t bg-card/40 py-24 sm:py-32">
+        <section className="relative border-t bg-card/40 py-24 sm:py-32">
+          {/* Stands on the section's top edge; its feet stay inside the top padding */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/mascot/full/duo_case.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-14 left-4 z-10 h-24 w-auto drop-shadow-xl sm:-top-20 sm:left-10 sm:h-36"
+          />
           <div className="mx-auto max-w-5xl px-6">
             <LandingBuiltFor />
           </div>
@@ -221,10 +255,10 @@ export function LandingPage() {
                 its bottom stops at the row's top padding so it never covers it */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/mascot/waving.png"
+              src="/mascot/full/girl_tablet_wave.png"
               alt=""
               aria-hidden="true"
-              className="mascot-wave pointer-events-none absolute -top-20 right-8 z-10 hidden h-40 w-auto drop-shadow-xl lg:block"
+              className="mascot-wave pointer-events-none absolute -top-16 right-4 z-10 h-28 w-auto drop-shadow-xl lg:-top-20 lg:right-8 lg:h-40"
             />
             <div>
               <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">

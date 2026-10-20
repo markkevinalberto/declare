@@ -3,6 +3,7 @@ import { BookOpen, Heart, HelpCircle, Quote, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageHero } from "@/components/shared/page-hero";
 import { ListenButton } from "./listen-button";
 import { PrayedCheck } from "./prayed-check";
 
@@ -45,22 +46,15 @@ export default async function DevotionalPage() {
 
   return (
     <div className="mx-auto grid max-w-2xl gap-4">
-      <div className="relative pr-24 sm:pr-32">
-        <h1 className="text-2xl font-semibold tracking-tight">Devotional</h1>
-        <p className="text-sm text-muted-foreground">
-          {lastLog
+      <PageHero
+        title="Devotional"
+        description={
+          lastLog
             ? `Sent ${format(parseISO(lastLog.sent_on), "EEEE, MMMM d")}.`
-            : "Your church's weekly devotional shows up here."}
-        </p>
-        {/* Sits on the card's top-right corner, above the decorative quote mark */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/mascot/prayer.png"
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none absolute right-2 -top-3 z-10 h-24 w-auto drop-shadow-lg sm:right-4 sm:-top-4 sm:h-32 md:-top-6"
-        />
-      </div>
+            : "Your church's weekly devotional shows up here."
+        }
+        mascot="/mascot/full/duo_hug.png"
+      />
 
       {!devotional || !lastLog ? (
         <Card className="animate-fade-up">

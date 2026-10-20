@@ -134,7 +134,7 @@ export function MessageThread({
           <ArrowLeft />
         </Button>
         <h1 className="text-lg font-semibold">{title}</h1>
-        <PageMascot src="/mascot/heart.png" className="h-14 -mt-1 -mb-1 sm:h-16 sm:-mt-2 sm:-mb-1 md:-mt-2" />
+        <PageMascot src="/mascot/full/girl_headphones_peace.png" className="h-14 -mt-1 -mb-1 sm:h-16 sm:-mt-2 sm:-mb-1 md:-mt-2" />
       </div>
 
       <ScrollArea className="rounded-lg border p-3">

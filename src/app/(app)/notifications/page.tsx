@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Settings } from "lucide-react";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { Button } from "@/components/ui/button";
 import { markAllNotificationsRead } from "./actions";
 import { NotificationRow } from "./notification-row";
@@ -22,27 +22,30 @@ export default async function NotificationsPage() {
 
   return (
     <div className="grid max-w-xl gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Notifications</h1>
-        <PageMascot src="/mascot/idea.png" />
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            nativeButton={false}
-            render={<Link href="/settings/notifications" />}
-          >
-            <Settings /> Preferences
-          </Button>
-          {hasUnread ? (
-            <form action={markAllNotificationsRead}>
-              <Button type="submit" variant="ghost" size="sm">
-                Mark all read
-              </Button>
-            </form>
-          ) : null}
-        </div>
-      </div>
+      <PageHero
+        title="Notifications"
+        description="Invites, responses, reminders, and new messages."
+        mascot="/mascot/full/girl_idea.png"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href="/settings/notifications" />}
+            >
+              <Settings /> Preferences
+            </Button>
+            {hasUnread ? (
+              <form action={markAllNotificationsRead}>
+                <Button type="submit" variant="ghost" size="sm">
+                  Mark all read
+                </Button>
+              </form>
+            ) : null}
+          </>
+        }
+      />
 
       {!notifications || notifications.length === 0 ? (
         <p className="text-sm text-muted-foreground">

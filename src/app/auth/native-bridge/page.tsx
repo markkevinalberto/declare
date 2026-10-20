@@ -60,7 +60,7 @@ function NativeBridge() {
       <div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/mascot/waving.png"
+          src="/mascot/full/girl_tablet_wave.png"
           alt=""
           aria-hidden="true"
           className="mx-auto mb-3 h-28 w-auto drop-shadow-lg"

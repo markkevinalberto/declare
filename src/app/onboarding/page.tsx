@@ -51,7 +51,7 @@ export default async function OnboardingPage() {
       ) : null}
 
       <div>
-        <CardSticker src="/mascot/cheer.png" />
+        <CardSticker src="/mascot/full/boy_running_rig.png" />
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">

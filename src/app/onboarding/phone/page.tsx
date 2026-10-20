@@ -17,7 +17,7 @@ export default async function PhoneOnboardingPage() {
   return (
     <div className="mx-auto grid max-w-md gap-4 px-4 py-16">
       <div>
-        <CardSticker src="/mascot/crew_walkie.png" />
+        <CardSticker src="/mascot/full/boy_headset_walkie.png" />
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Add your mobile number</CardTitle>

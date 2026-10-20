@@ -1,6 +1,6 @@
 import { requireScheduler } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { PeopleTable } from "./people-table";
 import { InvitePersonDialog } from "./invite-person-dialog";
 import { PendingInvites } from "./pending-invites";
@@ -48,16 +48,12 @@ export default async function PeoplePage() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">People</h1>
-          <p className="text-sm text-muted-foreground">
-            Everyone in your organization and the roles they hold.
-          </p>
-        </div>
-        <PageMascot src="/mascot/mm_duo_smile.png" />
-        {isAdmin ? <InvitePersonDialog /> : null}
-      </div>
+      <PageHero
+        title="People"
+        description="Everyone in your organization and the roles they hold."
+        mascot="/mascot/full/duo_thumbs_peace.png"
+        actions={isAdmin ? <InvitePersonDialog /> : null}
+      />
 
       {isAdmin && invites && invites.length > 0 ? (
         <PendingInvites invites={invites} />

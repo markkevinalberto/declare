@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInOrgTime } from "@/lib/org-time";
 import { FEATURES } from "@/lib/features";
-import { PageMascot } from "@/components/shared/page-mascot";
 import { EditServiceDialog } from "./edit-service-dialog";
 
 type Service = {
@@ -40,8 +39,16 @@ export function ServiceHeader({
   }
 
   return (
-    <Card className="print:border-none print:shadow-none">
-      <CardContent className="flex flex-wrap items-start justify-between gap-3 py-4">
+    <Card className="overflow-visible print:border-none print:shadow-none">
+      <CardContent className="relative grid min-h-28 gap-3 py-4 pr-28 sm:min-h-40 sm:pr-52 print:min-h-0 print:pr-4">
+        {/* Hero sticker: stands in the card's top-right corner, spilling above its edge */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/mascot/full/boy_tripod.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-6 right-2 z-10 h-32 w-auto drop-shadow-lg sm:-top-10 sm:right-4 sm:h-52 print:hidden"
+        />
         <div className="grid gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">{service.title}</h1>
           <p className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -80,11 +87,7 @@ export function ServiceHeader({
             </div>
           ) : null}
         </div>
-        <PageMascot
-          src="/mascot/crew_headset_tablet.png"
-          className="hidden h-24 -mt-6 -mb-4 sm:h-24 md:-mt-6 lg:block print:hidden!"
-        />
-        <div className="flex items-center gap-1 print:hidden">
+        <div className="flex flex-wrap items-center gap-1 print:hidden">
           {FEATURES.presenter ? (
             <Button
               variant="outline"

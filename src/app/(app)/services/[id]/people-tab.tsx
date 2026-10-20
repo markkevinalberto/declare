@@ -182,8 +182,9 @@ export function PeopleTab({
           })}
         </div>
 
-        <div className="grid content-start gap-4">
-          <p className="-mb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Roles</p>
+        {/* Extra room between cards for the stickers that spill over each card's corner */}
+        <div className="grid content-start gap-6 sm:gap-8">
+          <p className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase sm:mb-4">Roles</p>
           {activeGroup?.roles.map((role, i) => {
             const rolePositions = positions.filter((p) => p.role_id === role.id);
             const candidates = people.filter((person) =>

@@ -11,7 +11,7 @@ export default function AuthLayout({
         {/* Waves from the form card's top-right corner, clear of its fields */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/mascot/waving.png"
+          src="/mascot/full/girl_tablet_wave.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute right-0 top-0 z-10 h-20 w-auto drop-shadow-lg sm:-right-20 sm:top-6 sm:h-36"

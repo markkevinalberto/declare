@@ -1,7 +1,6 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { DevotionalPreviewCard } from "@/components/shared/devotional-preview-card";
 import { ServicesView } from "./services-view";
 import { NewServiceButton } from "./new-service-button";
@@ -23,32 +22,12 @@ export default async function ServicesPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="relative flex items-center justify-between gap-3 pb-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Services</h1>
-          <p className="text-sm text-muted-foreground">
-            Plan Sunday services and everything in between.
-          </p>
-        </div>
-        {/* Parked left of the New Service button, which stays layered above it */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/mascot/mm_girl_peace.png"
-          alt=""
-          aria-hidden="true"
-          className={cn(
-            "pointer-events-none absolute -top-6 z-10 hidden h-44 w-auto drop-shadow-lg lg:block",
-            isScheduler ? "right-40" : "right-2"
-          )}
-        />
-        {/* Phones/tablets: in-flow version, so it can't overlap the button */}
-        <PageMascot src="/mascot/mm_girl_peace.png" className="lg:hidden" />
-        {isScheduler ? (
-          <div className="relative z-20">
-            <NewServiceButton />
-          </div>
-        ) : null}
-      </div>
+      <PageHero
+        title="Services"
+        description="Plan Sunday services and everything in between."
+        mascot="/mascot/full/duo_laptop.png"
+        actions={isScheduler ? <NewServiceButton /> : null}
+      />
 
       <DevotionalPreviewCard />
 

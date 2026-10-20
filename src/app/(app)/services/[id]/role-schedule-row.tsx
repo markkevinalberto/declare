@@ -214,24 +214,32 @@ export function RoleScheduleRow({
   const hasBody = positions.length > 0 || isScheduler || showSelfSignUp;
 
   return (
-    // One card per role; the sticker sits on the role-name line, right after the name
-    <div className="overflow-hidden rounded-lg border bg-card">
+    // One card per role; the sticker leads the role name and spills over the top-left corner
+    <div className="relative rounded-lg border bg-card">
       <div>
-        <div className={cn("flex items-center gap-2 px-3 py-1.5", hasBody && "border-b")}>
-          <p className="min-w-0 truncate text-base font-semibold tracking-tight">{roleName}</p>
+        <div
+          className={cn(
+            "flex items-center gap-2 py-2.5 pr-3",
+            mascot ? "pl-16 sm:pl-24" : "pl-3",
+            hasBody && "border-b"
+          )}
+        >
           {mascot ? (
+            // Fixed box so wide stickers shrink instead of pushing into the name;
+            // its bottom stops above the first row's avatar
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={mascot}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none h-12 w-auto shrink-0 object-contain drop-shadow-md sm:h-14"
+              className="pointer-events-none absolute -top-6 -left-3 z-10 size-16 object-contain object-bottom drop-shadow-lg sm:-top-11 sm:-left-4 sm:size-24"
             />
           ) : null}
+          <p className="min-w-0 truncate text-base font-semibold tracking-tight">{roleName}</p>
           <p className="ml-auto shrink-0 pl-2 text-xs text-muted-foreground">{summary}</p>
         </div>
         {/* Rows keep their own container so the Add Person row's first:border-t-0 still applies */}
-        <div>
+        <div className="overflow-hidden rounded-b-lg">
           {positions.map((position) => {
             const mine = position.user_id === currentUserId;
             const canRespond = mine && position.status !== "draft";

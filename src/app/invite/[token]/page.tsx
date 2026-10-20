@@ -59,7 +59,7 @@ export default async function InvitePage({
 
   return (
     <div>
-      <CardSticker src="/mascot/mm_duo_smile.png" />
+      <CardSticker src="/mascot/full/duo_drones.png" />
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Join {invite.org_name}</CardTitle>

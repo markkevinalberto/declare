@@ -1,6 +1,6 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 import { SongDialog } from "./song-dialog";
 import { SongsView } from "./songs-view";
 
@@ -17,17 +17,12 @@ export default async function SongsPage() {
 
   return (
     <div className="grid max-w-3xl gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Songs</h1>
-          <p className="text-sm text-muted-foreground">
-            Your church&apos;s song library — tap a song to see lyrics and
-            details.
-          </p>
-        </div>
-        <PageMascot src="/mascot/mm_girl_tablet.png" />
-        {isScheduler ? <SongDialog /> : null}
-      </div>
+      <PageHero
+        title="Songs"
+        description="Your church's song library — tap a song to see lyrics and details."
+        mascot="/mascot/full/girl_sitting_music.png"
+        actions={isScheduler ? <SongDialog /> : null}
+      />
 
       <SongsView songs={songs ?? []} isScheduler={isScheduler} />
     </div>

@@ -31,7 +31,7 @@ export default async function JoinPage({
         {/* Same corner sticker as the sign-in pages */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/mascot/mm_duo_smile.png"
+          src="/mascot/full/duo_camera.png"
           alt=""
           aria-hidden="true"
           className="pointer-events-none absolute right-0 top-0 z-10 h-20 w-auto drop-shadow-lg sm:-right-24 sm:top-6 sm:h-32"

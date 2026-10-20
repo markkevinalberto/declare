@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DeclareMark } from "@/components/brand/declare-mark";
-import { PageMascot } from "@/components/shared/page-mascot";
+import { PageHero } from "@/components/shared/page-hero";
 
 export const metadata = {
   title: "Privacy Policy — Declare",
@@ -21,13 +21,11 @@ export default function PrivacyPage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-12">
-        <div className="flex items-center gap-3">
-          <div>
-            <h1 className="font-heading text-3xl font-semibold tracking-tight">Privacy Policy</h1>
-            <p className="mt-2 text-sm text-muted-foreground">Last updated September 5, 2026.</p>
-          </div>
-          <PageMascot src="/mascot/checkmark.png" />
-        </div>
+        <PageHero
+          title="Privacy Policy"
+          description="Last updated September 5, 2026."
+          mascot="/mascot/full/boy_thumbs_case.png"
+        />
 
         <div className="mt-8 grid gap-8 text-sm leading-relaxed text-foreground [&_h2]:mt-2 [&_h2]:font-heading [&_h2]:text-lg [&_h2]:font-semibold [&_p]:text-muted-foreground [&_li]:text-muted-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:grid [&_ul]:gap-1">
           <section>
