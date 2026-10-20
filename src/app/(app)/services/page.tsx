@@ -1,6 +1,7 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { DevotionalPreviewCard } from "@/components/shared/devotional-preview-card";
 import { ServicesView } from "./services-view";
 import { NewServiceButton } from "./new-service-button";
@@ -40,6 +41,8 @@ export default async function ServicesPage() {
             isScheduler ? "right-40" : "right-2"
           )}
         />
+        {/* Phones/tablets: in-flow version, so it can't overlap the button */}
+        <PageMascot src="/mascot/mm_girl_peace.png" className="lg:hidden" />
         {isScheduler ? (
           <div className="relative z-20">
             <NewServiceButton />

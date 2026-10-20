@@ -57,7 +57,16 @@ function NativeBridge() {
 
   return (
     <div className="grid min-h-svh place-items-center px-6 text-center text-sm text-muted-foreground">
-      Signing you in…
+      <div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/mascot/waving.png"
+          alt=""
+          aria-hidden="true"
+          className="mx-auto mb-3 h-28 w-auto drop-shadow-lg"
+        />
+        Signing you in…
+      </div>
     </div>
   );
 }

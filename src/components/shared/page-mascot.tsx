@@ -9,7 +9,8 @@ export function PageMascot({ src, className }: { src: string; className?: string
       alt=""
       aria-hidden="true"
       className={cn(
-        "pointer-events-none relative z-10 -mt-4 -mb-4 ml-auto hidden h-28 w-auto shrink-0 self-end drop-shadow-lg sm:block md:-mt-6",
+        // Smaller on phones (incl. the Android app), full size from sm up
+        "pointer-events-none relative z-10 -mt-2 -mb-3 ml-auto block h-16 w-auto shrink-0 self-end drop-shadow-lg sm:-mt-4 sm:-mb-4 sm:h-28 md:-mt-6",
         className
       )}
     />

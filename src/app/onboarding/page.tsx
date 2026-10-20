@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { requireProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { CardSticker } from "@/components/shared/card-sticker";
 import { CreateOrgForm } from "./create-org-form";
 import { JoinInviteCard } from "./join-invite-card";
 
@@ -49,20 +50,23 @@ export default async function OnboardingPage() {
         </div>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {pendingInvites.length > 0 ? "Create a new church" : "Set up your church"}
-          </CardTitle>
-          <CardDescription>
-            Create your organization to start planning services. You&apos;ll
-            become the Admin.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CreateOrgForm />
-        </CardContent>
-      </Card>
+      <div>
+        <CardSticker src="/mascot/cheer.png" />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">
+              {pendingInvites.length > 0 ? "Create a new church" : "Set up your church"}
+            </CardTitle>
+            <CardDescription>
+              Create your organization to start planning services. You&apos;ll
+              become the Admin.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CreateOrgForm />
+          </CardContent>
+        </Card>
+      </div>
 
       {pendingInvites.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground">

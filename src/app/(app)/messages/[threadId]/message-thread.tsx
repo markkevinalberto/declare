@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatInOrgTime } from "@/lib/org-time";
@@ -133,6 +134,7 @@ export function MessageThread({
           <ArrowLeft />
         </Button>
         <h1 className="text-lg font-semibold">{title}</h1>
+        <PageMascot src="/mascot/heart.png" className="h-14 -mt-1 -mb-1 sm:h-16 sm:-mt-2 sm:-mb-1 md:-mt-2" />
       </div>
 
       <ScrollArea className="rounded-lg border p-3">

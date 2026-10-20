@@ -5,6 +5,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FEATURES as FEATURE_FLAGS } from "@/lib/features";
 import { LandingHeroVisual } from "./landing-hero-visual";
+import { RosterReelPlayer } from "@/components/remotion/roster-reel-player";
+import type { RosterReelProps } from "@/components/remotion/roster-reel";
+import { distinctMascots } from "@/lib/mascots";
 import { LandingMarquee } from "./landing-marquee";
 import { LandingFeatureShowcase, type ShowcaseFeature } from "./landing-feature-showcase";
 import { LandingBuiltFor } from "./landing-built-for";
@@ -58,6 +61,24 @@ const ALL_FEATURES: (ShowcaseFeature & { requires?: "planning" | "presenter" })[
 ];
 
 const FEATURES = ALL_FEATURES.filter((f) => !f.requires || FEATURE_FLAGS[f.requires]);
+
+// Sample lineup for the hero animation (fictional volunteers)
+const HERO_ROLES: [string, string][] = [
+  ["Main Cam CH 1", "Joshua P."],
+  ["Livestream", "Ana R."],
+  ["Sound Engineer", "Paolo C."],
+  ["Slides & Lyrics", "Grace L."],
+  ["Photographer", "Mia T."],
+  ["Technical Director", "Ken D."],
+];
+const HERO_MASCOTS = distinctMascots(HERO_ROLES.map(([role]) => [role]));
+const HERO_REEL: RosterReelProps = {
+  eyebrow: "Media team",
+  title: "Sunday Worship",
+  when: "Sun · 9:00 AM",
+  mode: "demo",
+  roles: HERO_ROLES.map(([name, person], i) => ({ name, person, mascot: HERO_MASCOTS[i], status: "invited" })),
+};
 
 export function LandingPage() {
   return (
@@ -136,17 +157,17 @@ export function LandingPage() {
           </div>
 
           <div className="relative">
-            <LandingHeroVisual
-              src="/marketing/dashboard.png"
-              alt="The Declare dashboard, showing upcoming services, unfilled positions, and pending volunteer responses"
-            />
-            {/* Mascot — floats over the bottom-left corner of the hero screenshot */}
+            {/* Animated (Remotion) lineup: roles fill in and flip to Confirmed, on loop */}
+            <LandingHeroVisual>
+              <RosterReelPlayer {...HERO_REEL} loop />
+            </LandingHeroVisual>
+            {/* Peeks over the top-right corner, above the reel's empty header edge */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/mascot/hero_thumbsup.png"
               alt=""
               aria-hidden="true"
-              className="mascot-float pointer-events-none absolute -bottom-10 -left-10 z-20 h-56 w-auto object-contain drop-shadow-xl sm:h-64 lg:h-72"
+              className="mascot-float pointer-events-none absolute -right-2 -top-12 z-20 h-28 w-auto drop-shadow-xl sm:-right-4 sm:-top-20 sm:h-36 lg:-right-8 lg:-top-28 lg:h-48"
             />
           </div>
         </section>

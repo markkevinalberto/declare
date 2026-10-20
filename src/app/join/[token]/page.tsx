@@ -27,7 +27,15 @@ export default async function JoinPage({
 
   const shell = (children: React.ReactNode) => (
     <div className="flex min-h-svh w-full items-center justify-center bg-muted/40 p-6">
-      <div className="w-full max-w-sm">
+      <div className="relative w-full max-w-sm">
+        {/* Same corner sticker as the sign-in pages */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/mascot/mm_duo_smile.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-0 top-0 z-10 h-20 w-auto drop-shadow-lg sm:-right-24 sm:top-6 sm:h-32"
+        />
         <div className="mb-6 flex flex-col items-center gap-2">
           <span className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/30">
             <DeclareMark className="size-6 text-primary-foreground" />

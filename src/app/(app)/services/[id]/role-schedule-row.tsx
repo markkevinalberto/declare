@@ -211,130 +211,128 @@ export function RoleScheduleRow({
   }
 
   const summary = summarize(positions);
+  const hasBody = positions.length > 0 || isScheduler || showSelfSignUp;
 
   return (
-    // Sticker gets its own fixed rail on the left so every role name starts on the same edge
-    <div className={cn("grid gap-x-4 gap-y-2", mascot && "sm:grid-cols-[7rem_minmax(0,1fr)]")}>
-      {mascot ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={mascot}
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none hidden size-28 object-contain object-top drop-shadow-md sm:row-span-2 sm:block"
-        />
-      ) : null}
-      <div className="flex min-w-0 flex-col gap-0.5 pt-1">
-        <p className="truncate text-base font-semibold tracking-tight">{roleName}</p>
-        <p className="text-xs text-muted-foreground">{summary}</p>
-      </div>
-      <div className="overflow-hidden rounded-lg border bg-card">
-        {positions.length === 0 && !isScheduler && !showSelfSignUp ? (
-          <p className="px-3 py-2.5 text-sm text-muted-foreground">
-            No one scheduled yet.
-          </p>
-        ) : null}
-
-        {positions.map((position) => {
-          const mine = position.user_id === currentUserId;
-          const canRespond = mine && position.status !== "draft";
-          const invited = position.status === "invited";
-          return (
-            <div
-              key={position.id}
-              className="flex items-center justify-between gap-2 border-b px-3 py-3 last:border-b-0"
-            >
-              <PersonRoleBadge
-                position={position}
-                roleName={roleName}
-                mine={mine}
-                unavailable={Boolean(position.user_id && unavailableSet.has(position.user_id))}
-              />
-              <div className="flex shrink-0 items-center gap-1">
-                {canRespond && position.status !== "accepted" ? (
-                  <Button
-                    size="sm"
-                    variant={invited ? undefined : "outline"}
-                    className={
-                      invited
-                        ? "bg-green-600 text-white shadow-none hover:bg-green-600/90"
-                        : "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-900 dark:text-green-500 dark:hover:bg-green-950"
-                    }
-                    disabled={pending}
-                    onClick={() => handleRespond(position.id, "accept")}
-                  >
-                    <Check /> Accept
-                  </Button>
-                ) : null}
-                {canRespond && position.status !== "declined" ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-500 dark:hover:bg-red-950"
-                    disabled={pending}
-                    onClick={() => handleRespond(position.id, "decline")}
-                  >
-                    <X /> Decline
-                  </Button>
-                ) : null}
-                {isScheduler && position.status === "draft" ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={pending}
-                    onClick={() => handleSend(position.id, "send")}
-                  >
-                    <Send /> Send now
-                  </Button>
-                ) : null}
-                {isScheduler && position.status === "invited" ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={pending}
-                    title="They haven't responded yet — send the invite email again"
-                    onClick={() => handleSend(position.id, "resend")}
-                  >
-                    <Send /> Resend
-                  </Button>
-                ) : null}
-                {isScheduler ? (
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:text-destructive"
-                    disabled={pending}
-                    onClick={() => handleDelete(position.id)}
-                    aria-label={`Remove ${position.profiles?.name ?? position.profiles?.email ?? "this person"}`}
-                  >
-                    <Trash2 />
-                  </Button>
-                ) : null}
+    // One card per role; the sticker sits on the role-name line, right after the name
+    <div className="overflow-hidden rounded-lg border bg-card">
+      <div>
+        <div className={cn("flex items-center gap-2 px-3 py-1.5", hasBody && "border-b")}>
+          <p className="min-w-0 truncate text-base font-semibold tracking-tight">{roleName}</p>
+          {mascot ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={mascot}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none h-12 w-auto shrink-0 object-contain drop-shadow-md sm:h-14"
+            />
+          ) : null}
+          <p className="ml-auto shrink-0 pl-2 text-xs text-muted-foreground">{summary}</p>
+        </div>
+        {/* Rows keep their own container so the Add Person row's first:border-t-0 still applies */}
+        <div>
+          {positions.map((position) => {
+            const mine = position.user_id === currentUserId;
+            const canRespond = mine && position.status !== "draft";
+            const invited = position.status === "invited";
+            return (
+              <div
+                key={position.id}
+                className="flex items-center justify-between gap-2 border-b px-3 py-3 last:border-b-0"
+              >
+                <PersonRoleBadge
+                  position={position}
+                  roleName={roleName}
+                  mine={mine}
+                  unavailable={Boolean(position.user_id && unavailableSet.has(position.user_id))}
+                />
+                <div className="flex shrink-0 items-center gap-1">
+                  {canRespond && position.status !== "accepted" ? (
+                    <Button
+                      size="sm"
+                      variant={invited ? undefined : "outline"}
+                      className={
+                        invited
+                          ? "bg-green-600 text-white shadow-none hover:bg-green-600/90"
+                          : "border-green-300 text-green-700 hover:bg-green-50 dark:border-green-900 dark:text-green-500 dark:hover:bg-green-950"
+                      }
+                      disabled={pending}
+                      onClick={() => handleRespond(position.id, "accept")}
+                    >
+                      <Check /> Accept
+                    </Button>
+                  ) : null}
+                  {canRespond && position.status !== "declined" ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-500 dark:hover:bg-red-950"
+                      disabled={pending}
+                      onClick={() => handleRespond(position.id, "decline")}
+                    >
+                      <X /> Decline
+                    </Button>
+                  ) : null}
+                  {isScheduler && position.status === "draft" ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={pending}
+                      onClick={() => handleSend(position.id, "send")}
+                    >
+                      <Send /> Send now
+                    </Button>
+                  ) : null}
+                  {isScheduler && position.status === "invited" ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={pending}
+                      title="They haven't responded yet — send the invite email again"
+                      onClick={() => handleSend(position.id, "resend")}
+                    >
+                      <Send /> Resend
+                    </Button>
+                  ) : null}
+                  {isScheduler ? (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive"
+                      disabled={pending}
+                      onClick={() => handleDelete(position.id)}
+                      aria-label={`Remove ${position.profiles?.name ?? position.profiles?.email ?? "this person"}`}
+                    >
+                      <Trash2 />
+                    </Button>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {isScheduler ? (
-          <AddPersonPopover
-            serviceId={serviceId}
-            roleId={roleId}
-            candidates={availableCandidates}
-            rowTrigger
-          />
-        ) : null}
+          {isScheduler ? (
+            <AddPersonPopover
+              serviceId={serviceId}
+              roleId={roleId}
+              candidates={availableCandidates}
+              rowTrigger
+            />
+          ) : null}
 
-        {showSelfSignUp ? (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={handleSelfSignUp}
-            className="flex w-full items-center justify-center gap-1.5 border-t bg-muted/40 px-3 py-2 text-sm font-medium text-primary transition-colors first:border-t-0 hover:bg-accent disabled:opacity-50"
-          >
-            <UserPlus className="size-4" />
-            {pending ? "Signing up…" : "Sign up for this role"}
-          </button>
-        ) : null}
+          {showSelfSignUp ? (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={handleSelfSignUp}
+              className="flex w-full items-center justify-center gap-1.5 border-t bg-muted/40 px-3 py-2 text-sm font-medium text-primary transition-colors first:border-t-0 hover:bg-accent disabled:opacity-50"
+            >
+              <UserPlus className="size-4" />
+              {pending ? "Signing up…" : "Sign up for this role"}
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

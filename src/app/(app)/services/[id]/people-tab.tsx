@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Bell, CheckCircle2, CircleHelp, Send, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { distinctMascots, mascotFor } from "@/lib/mascots";
+import { distinctMascots } from "@/lib/mascots";
 import { resendAllPendingInvites, sendAllInvites } from "./position-actions";
 import { RoleScheduleRow } from "./role-schedule-row";
 
@@ -106,12 +106,8 @@ export function PeopleTab({
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(undefined);
   const activeGroupId = selectedGroupId ?? defaultGroupId;
   const activeGroup = groupsWithData.find((g) => g.group.id === activeGroupId);
-  const teamMascot = activeGroup ? mascotFor(activeGroup.group.name) : null;
   const roleMascots = activeGroup
-    ? distinctMascots(
-        activeGroup.roles.map((r) => [r.name, activeGroup.group.name]),
-        teamMascot ? [teamMascot] : []
-      )
+    ? distinctMascots(activeGroup.roles.map((r) => [r.name, activeGroup.group.name]))
     : [];
 
   const totalCounts = countStatuses(positions);
@@ -184,23 +180,10 @@ export function PeopleTab({
               </button>
             );
           })}
-          {/* Under the team list rather than over the role rows, whose right
-              edge holds the Resend / Remove controls. Keyed so it re-animates
-              when the selected team changes. */}
-          {activeGroup ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={activeGroup.group.id}
-              src={teamMascot ?? undefined}
-              alt=""
-              aria-hidden="true"
-              className="animate-fade-up pointer-events-none mt-4 hidden h-52 w-auto justify-self-center drop-shadow-lg md:block"
-            />
-          ) : null}
         </div>
 
-        <div className="grid content-start gap-6">
-          <p className="-mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Roles</p>
+        <div className="grid content-start gap-4">
+          <p className="-mb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Roles</p>
           {activeGroup?.roles.map((role, i) => {
             const rolePositions = positions.filter((p) => p.role_id === role.id);
             const candidates = people.filter((person) =>

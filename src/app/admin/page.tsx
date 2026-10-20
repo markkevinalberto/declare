@@ -14,6 +14,7 @@ import { getSmsRemindersEnabled } from "@/lib/app-settings";
 import { logout } from "@/app/(auth)/actions";
 import { AdminUsersTable, type AdminUserRow } from "./admin-users-table";
 import { SmsRemindersToggle } from "./sms-reminders-toggle";
+import { PageMascot } from "@/components/shared/page-mascot";
 
 export default async function AdminPage() {
   const profile = await requireSuperAdmin();
@@ -90,13 +91,18 @@ export default async function AdminPage() {
           </CardContent>
         </Card>
 
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight">
-          All registered users
-        </h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Every user across every organization, sorted with never-signed-in
-          accounts first — the easiest way to spot idle signups to clean up.
-        </p>
+        <div className="mb-6 flex items-center gap-3">
+          <div>
+            <h1 className="mb-1 text-2xl font-semibold tracking-tight">
+              All registered users
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Every user across every organization, sorted with never-signed-in
+              accounts first — the easiest way to spot idle signups to clean up.
+            </p>
+          </div>
+          <PageMascot src="/mascot/crew_director.png" className="-mt-2 md:-mt-2" />
+        </div>
         <AdminUsersTable rows={rows} currentUserId={profile.id} />
       </main>
     </div>

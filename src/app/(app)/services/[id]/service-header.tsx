@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInOrgTime } from "@/lib/org-time";
 import { FEATURES } from "@/lib/features";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { EditServiceDialog } from "./edit-service-dialog";
 
 type Service = {
@@ -79,6 +80,10 @@ export function ServiceHeader({
             </div>
           ) : null}
         </div>
+        <PageMascot
+          src="/mascot/crew_headset_tablet.png"
+          className="hidden h-24 -mt-6 -mb-4 sm:h-24 md:-mt-6 lg:block print:hidden!"
+        />
         <div className="flex items-center gap-1 print:hidden">
           {FEATURES.presenter ? (
             <Button

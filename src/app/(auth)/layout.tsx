@@ -14,7 +14,7 @@ export default function AuthLayout({
           src="/mascot/waving.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -right-20 top-6 z-10 hidden h-36 w-auto drop-shadow-lg sm:block"
+          className="pointer-events-none absolute right-0 top-0 z-10 h-20 w-auto drop-shadow-lg sm:-right-20 sm:top-6 sm:h-36"
         />
         <div className="mb-6 flex flex-col items-center gap-2">
           <span className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/30">

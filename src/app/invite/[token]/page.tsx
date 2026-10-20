@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth/current-user";
+import { CardSticker } from "@/components/shared/card-sticker";
 import { AcceptInviteForm } from "./accept-invite-form";
 
 export default async function InvitePage({
@@ -57,17 +58,20 @@ export default async function InvitePage({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">Join {invite.org_name}</CardTitle>
-        <CardDescription>
-          You&apos;ve been invited as a {invite.role}. Accept to join the
-          team.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <AcceptInviteForm token={token} />
-      </CardContent>
-    </Card>
+    <div>
+      <CardSticker src="/mascot/mm_duo_smile.png" />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Join {invite.org_name}</CardTitle>
+          <CardDescription>
+            You&apos;ve been invited as a {invite.role}. Accept to join the
+            team.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AcceptInviteForm token={token} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

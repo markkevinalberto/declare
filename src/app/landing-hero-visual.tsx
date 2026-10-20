@@ -5,7 +5,15 @@ import Image from "next/image";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
-export function LandingHeroVisual({ src, alt }: { src: string; alt: string }) {
+export function LandingHeroVisual({
+  src,
+  alt = "",
+  children,
+}: {
+  src?: string;
+  alt?: string;
+  children?: React.ReactNode;
+}) {
   const frameRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
@@ -29,7 +37,7 @@ export function LandingHeroVisual({ src, alt }: { src: string; alt: string }) {
           <span className="size-2.5 rounded-full bg-chart-3/50" />
           <span className="size-2.5 rounded-full bg-chart-2/50" />
         </div>
-        <Image src={src} alt={alt} width={1400} height={875} priority className="w-full" />
+        {children ?? (src ? <Image src={src} alt={alt} width={1400} height={875} priority className="w-full" /> : null)}
       </div>
     </div>
   );

@@ -45,7 +45,7 @@ export default async function DevotionalPage() {
 
   return (
     <div className="mx-auto grid max-w-2xl gap-4">
-      <div className="relative sm:pr-32">
+      <div className="relative pr-24 sm:pr-32">
         <h1 className="text-2xl font-semibold tracking-tight">Devotional</h1>
         <p className="text-sm text-muted-foreground">
           {lastLog
@@ -58,7 +58,7 @@ export default async function DevotionalPage() {
           src="/mascot/prayer.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute right-4 -top-4 z-10 hidden h-32 w-auto drop-shadow-lg sm:block md:-top-6"
+          className="pointer-events-none absolute right-2 -top-3 z-10 h-24 w-auto drop-shadow-lg sm:right-4 sm:-top-4 sm:h-32 md:-top-6"
         />
       </div>
 

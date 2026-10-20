@@ -13,6 +13,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CardIcon } from "@/components/shared/card-icon";
 import { DevotionalPreviewCard } from "@/components/shared/devotional-preview-card";
+import { RosterReelPlayer } from "@/components/remotion/roster-reel-player";
+import type { ReelStatus, RosterReelProps } from "@/components/remotion/roster-reel";
+import { distinctMascots } from "@/lib/mascots";
 
 type ServiceRow = { id: string; title: string; starts_at: string; campus: string | null };
 type PositionRow = {
@@ -24,6 +27,58 @@ type PositionRow = {
   roles: { name: string } | null;
   profiles: { name: string | null } | null;
 };
+
+type LineupRow = {
+  status: ReelStatus;
+  roles: { name: string } | null;
+  profiles: { name: string | null } | null;
+};
+const STATUS_ORDER: Record<ReelStatus, number> = { accepted: 0, invited: 1, draft: 2, declined: 3 };
+
+// Animated lineup card data for the next upcoming service (confirmed roles first)
+async function getNextLineup(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  service: ServiceRow | undefined,
+  timezone: string
+): Promise<{ href: string; reel: RosterReelProps } | null> {
+  if (!service) return null;
+  const { data } = await supabase
+    .from("positions")
+    .select("status, roles(name), profiles!positions_user_id_fkey(name)")
+    .eq("service_id", service.id);
+  const rows = ((data ?? []) as unknown as LineupRow[]).filter((r) => r.roles);
+  if (rows.length === 0) return null;
+  rows.sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
+  const shown = rows.slice(0, 6);
+  const mascots = distinctMascots(shown.map((r) => [r.roles!.name]));
+  return {
+    href: `/services/${service.id}`,
+    reel: {
+      eyebrow: "Next service lineup",
+      title: service.title,
+      when: formatInOrgTime(service.starts_at, timezone, "EEE, MMM d · h:mm a"),
+      mode: "live",
+      roles: shown.map((r, i) => ({
+        name: r.roles!.name,
+        person: r.profiles?.name ?? null,
+        mascot: mascots[i],
+        status: r.status,
+      })),
+      totals: { confirmed: rows.filter((r) => r.status === "accepted").length, total: rows.length },
+    },
+  };
+}
+
+function LineupCard({ lineup }: { lineup: { href: string; reel: RosterReelProps } }) {
+  return (
+    <Link
+      href={lineup.href}
+      className="animate-fade-up block overflow-hidden rounded-xl border bg-card transition-colors hover:border-primary/40"
+    >
+      <RosterReelPlayer {...lineup.reel} />
+    </Link>
+  );
+}
 
 function EmptyState({ icon: Icon, message }: { icon: typeof CalendarDays; message: string }) {
   return (
@@ -55,6 +110,8 @@ export default async function DashboardPage() {
     .order("starts_at")
     .limit(5);
 
+  const lineup = await getNextLineup(supabase, nextServices?.[0], timezone);
+
   if (!isScheduler) {
     const { data: myPositions } = await supabase
       .from("positions")
@@ -72,7 +129,7 @@ export default async function DashboardPage() {
 
     return (
       <div className="grid gap-4">
-        <div className="relative pb-2 sm:pr-52">
+        <div className="relative pb-2 pr-24 sm:pr-52">
           <h1 className="text-2xl font-semibold tracking-tight">
             Welcome, {profile.name || profile.email}
           </h1>
@@ -82,11 +139,13 @@ export default async function DashboardPage() {
             src="/mascot/hero_thumbsup.png"
             alt=""
             aria-hidden="true"
-            className="pointer-events-none absolute -right-4 -top-4 z-10 hidden h-52 w-auto drop-shadow-lg sm:block md:-top-6"
+            className="pointer-events-none absolute -right-3 -top-3 z-10 h-28 w-auto drop-shadow-lg sm:-right-4 sm:-top-4 sm:h-52 md:-top-6"
           />
         </div>
 
         <DevotionalPreviewCard />
+
+        {lineup ? <LineupCard lineup={lineup} /> : null}
 
         {pendingInvites.length > 0 ? (
           <Card className="animate-fade-up">
@@ -177,7 +236,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="relative pb-2 sm:pr-52">
+      <div className="relative pb-2 pr-24 sm:pr-52">
         <h1 className="text-2xl font-semibold tracking-tight">
           Welcome, {profile.name || profile.email}
         </h1>
@@ -187,11 +246,13 @@ export default async function DashboardPage() {
           src="/mascot/hero_thumbsup.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -right-4 -top-4 z-10 hidden h-52 w-auto drop-shadow-lg sm:block md:-top-6"
+          className="pointer-events-none absolute -right-3 -top-3 z-10 h-28 w-auto drop-shadow-lg sm:-right-4 sm:-top-4 sm:h-52 md:-top-6"
         />
       </div>
 
       <DevotionalPreviewCard />
+
+      {lineup ? <LineupCard lineup={lineup} /> : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="animate-fade-up">
