@@ -72,11 +72,18 @@ export default async function DashboardPage() {
 
     return (
       <div className="grid gap-4">
-        <div>
+        <div className="relative overflow-visible pb-2">
           <h1 className="text-2xl font-semibold tracking-tight">
             Welcome, {profile.name || profile.email}
           </h1>
           <p className="text-sm text-muted-foreground">Here&apos;s what&apos;s coming up.</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/mascot/hero_thumbsup.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-4 -top-10 h-56 w-auto object-contain hidden sm:block"
+          />
         </div>
 
         <DevotionalPreviewCard />
@@ -170,11 +177,18 @@ export default async function DashboardPage() {
 
   return (
     <div className="grid gap-4">
-      <div>
+      <div className="relative overflow-visible pb-2">
         <h1 className="text-2xl font-semibold tracking-tight">
           Welcome, {profile.name || profile.email}
         </h1>
         <p className="text-sm text-muted-foreground">Here&apos;s what&apos;s coming up.</p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/mascot/hero_thumbsup.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-4 -top-10 h-56 w-auto object-contain hidden sm:block"
+        />
       </div>
 
       <DevotionalPreviewCard />

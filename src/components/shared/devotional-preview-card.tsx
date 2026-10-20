@@ -39,7 +39,14 @@ export async function DevotionalPreviewCard() {
   if (!devotional) return null;
 
   return (
-    <Card className="animate-fade-up">
+    <Card className="animate-fade-up relative overflow-visible">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/mascot/prayer.png"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-3 -top-14 z-10 h-36 w-auto object-contain"
+      />
       <CardHeader>
         <CardTitle className="flex items-center gap-2.5">
           <CardIcon icon={BookOpen} /> This week&apos;s devotional

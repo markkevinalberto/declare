@@ -21,13 +21,20 @@ export default async function ServicesPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="relative flex items-center justify-between gap-3 overflow-visible pb-2">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Services</h1>
           <p className="text-sm text-muted-foreground">
             Plan Sunday services and everything in between.
           </p>
         </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/mascot/mm_girl_peace.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-16 -top-10 h-44 w-auto object-contain [mix-blend-mode:multiply] hidden sm:block"
+        />
         {isScheduler ? <NewServiceButton /> : null}
       </div>
 
