@@ -39,7 +39,7 @@ export function LandingVideo() {
           </button>
         ))}
       </div>
-      <div className="mt-6 overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-primary/15 ring-1 ring-foreground/5">
+      <div className="mt-6 overflow-hidden rounded-[1.5rem] bg-card shadow-[0_30px_70px_-30px_rgb(36_91_255/0.45)] ring-4 ring-white">
         <video
           key={video.src}
           className="aspect-video w-full bg-black"

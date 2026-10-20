@@ -14,6 +14,8 @@ export type ShowcaseFeature = {
   // types/functions can't cross the server->client prop boundary, only
   // serializable data and already-rendered JSX can.
   icon: React.ReactNode;
+  // Pastel colour (a CSS colour value) for this feature's chip, bar and frame
+  tone: string;
   eyebrow: string;
   title: string;
   description: string;
@@ -109,7 +111,10 @@ export function LandingFeatureShowcase({ features }: { features: ShowcaseFeature
                 i === active ? "opacity-100" : "hidden opacity-0"
               )}
             >
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/25">
+              <span
+                className="flex size-12 items-center justify-center rounded-2xl shadow-sm ring-1 ring-white"
+                style={{ background: feature.tone }}
+              >
                 {feature.icon}
               </span>
               <div className="mt-4 text-sm font-medium text-primary">{feature.eyebrow}</div>
@@ -124,9 +129,10 @@ export function LandingFeatureShowcase({ features }: { features: ShowcaseFeature
             <span
               key={feature.title}
               className={cn(
-                "h-1 flex-1 rounded-full transition-colors duration-300",
-                i === active ? "bg-primary" : "bg-border"
+                "h-1.5 flex-1 rounded-full transition-[background-color,flex-grow] duration-500",
+                i === active ? "grow-[2] bg-primary" : ""
               )}
+              style={i === active ? undefined : { background: feature.tone }}
             />
           ))}
         </div>
@@ -144,20 +150,24 @@ export function LandingFeatureShowcase({ features }: { features: ShowcaseFeature
               ref={(el) => {
                 imageRefs.current[i] = el;
               }}
-              className="overflow-hidden rounded-xl border bg-card shadow-2xl shadow-primary/10 ring-1 ring-foreground/5"
+              // Double bezel: the feature's pastel tray holding the app window
+              className="rounded-[1.75rem] p-2 shadow-[0_30px_70px_-30px_rgb(36_91_255/0.35)]"
+              style={{ background: feature.tone }}
             >
-              <div className="flex items-center gap-1.5 border-b bg-muted/40 px-3 py-2">
-                <span className="size-2.5 rounded-full bg-destructive/40" />
-                <span className="size-2.5 rounded-full bg-chart-3/50" />
-                <span className="size-2.5 rounded-full bg-chart-2/50" />
+              <div className="overflow-hidden rounded-[calc(1.75rem-0.5rem)] bg-card ring-1 ring-white">
+                <div className="flex items-center gap-1.5 border-b bg-muted/60 px-4 py-2.5">
+                  <span className="size-2.5 rounded-full bg-(--pop)/70" />
+                  <span className="size-2.5 rounded-full bg-(--sun)" />
+                  <span className="size-2.5 rounded-full bg-emerald-400" />
+                </div>
+                <Image
+                  src={feature.image}
+                  alt={feature.imageAlt}
+                  width={1400}
+                  height={875}
+                  className="w-full"
+                />
               </div>
-              <Image
-                src={feature.image}
-                alt={feature.imageAlt}
-                width={1400}
-                height={875}
-                className="w-full"
-              />
             </div>
           </div>
         ))}
