@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { OrgForm } from "./org-form";
 import { InviteForm } from "./invite-form";
 import { InvitesList } from "./invites-list";
@@ -36,9 +37,12 @@ export default async function SettingsPage() {
 
   return (
     <div className="grid max-w-2xl gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Organization settings
-      </h1>
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Organization settings
+        </h1>
+        <PageMascot src="/mascot/laptop.png" />
+      </div>
 
       <Card>
         <CardHeader>

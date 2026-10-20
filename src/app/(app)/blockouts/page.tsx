@@ -1,5 +1,6 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageMascot } from "@/components/shared/page-mascot";
 import {
   Card,
   CardContent,
@@ -22,11 +23,14 @@ export default async function BlockoutsPage() {
 
   return (
     <div className="grid max-w-xl gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Blockout Dates</h1>
-        <p className="text-sm text-muted-foreground">
-          Let schedulers know when you&apos;re unavailable to serve.
-        </p>
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Blockout Dates</h1>
+          <p className="text-sm text-muted-foreground">
+            Let schedulers know when you&apos;re unavailable to serve.
+          </p>
+        </div>
+        <PageMascot src="/mascot/mm_cables2.png" />
       </div>
 
       <Card>

@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { DevotionalsEnabledToggle } from "./devotionals-enabled-toggle";
 import { DevotionalList, type DevotionalRow } from "./devotional-list";
 
@@ -45,13 +46,16 @@ export default async function DevotionalsPage() {
 
   return (
     <div className="grid max-w-2xl gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Weekly devotional</h1>
-        <p className="text-sm text-muted-foreground">
-          Every Sunday at 6:00 AM {org?.timezone ? `(${org.timezone})` : ""}, Declare
-          emails and texts your whole active team the next devotional below,
-          cycling through the list in order and looping back to the top.
-        </p>
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Weekly devotional</h1>
+          <p className="text-sm text-muted-foreground">
+            Every Sunday at 6:00 AM {org?.timezone ? `(${org.timezone})` : ""}, Declare
+            emails and texts your whole active team the next devotional below,
+            cycling through the list in order and looping back to the top.
+          </p>
+        </div>
+        <PageMascot src="/mascot/prayer.png" />
       </div>
 
       <Card>

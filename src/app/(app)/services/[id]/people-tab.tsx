@@ -1,23 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-
-function getRoleMascot(groupName: string): string {
-  const n = groupName.toLowerCase();
-  if (n.includes("camera") || n.includes("photo") || n.includes("videograph")) return "/mascot/camera.png";
-  if (n.includes("video") || n.includes("record") || n.includes("film")) return "/mascot/mm_camera3.png";
-  if (n.includes("sound") || n.includes("audio") || n.includes("mix")) return "/mascot/mm_mixer.png";
-  if (n.includes("stream") || n.includes("switch") || n.includes("live") || n.includes("vmix") || n.includes("obs")) return "/mascot/mm_laptop2.png";
-  if (n.includes("media") || n.includes("tech") || n.includes("operator")) return "/mascot/mm_headset2.png";
-  if (n.includes("worship") || n.includes("prayer") || n.includes("devotion")) return "/mascot/prayer.png";
-  if (n.includes("host") || n.includes("lead") || n.includes("mc") || n.includes("emcee") || n.includes("announce")) return "/mascot/waving.png";
-  if (n.includes("cable") || n.includes("setup") || n.includes("crew") || n.includes("stage")) return "/mascot/clipboard.png";
-  return "/mascot/mm_thumbsup.png";
-}
 import { toast } from "sonner";
 import { Bell, CheckCircle2, CircleHelp, Send, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { mascotFor } from "@/lib/mascots";
 import { resendAllPendingInvites, sendAllInvites } from "./position-actions";
 import { RoleScheduleRow } from "./role-schedule-row";
 
@@ -189,19 +177,23 @@ export function PeopleTab({
               </button>
             );
           })}
-        </div>
-
-        <div className="relative grid content-start gap-4">
-          <p className="text-sm font-semibold">Roles</p>
+          {/* Under the team list rather than over the role rows, whose right
+              edge holds the Resend / Remove controls. Keyed so it re-animates
+              when the selected team changes. */}
           {activeGroup ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={getRoleMascot(activeGroup.group.name)}
+              key={activeGroup.group.id}
+              src={mascotFor(activeGroup.group.name)}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none absolute -right-3 -top-4 z-0 h-48 w-auto object-contain opacity-90 [mix-blend-mode:multiply]"
+              className="animate-fade-up pointer-events-none mt-4 hidden h-52 w-auto justify-self-center drop-shadow-lg md:block"
             />
           ) : null}
+        </div>
+
+        <div className="grid content-start gap-4">
+          <p className="text-sm font-semibold">Roles</p>
           {activeGroup?.roles.map((role) => {
             const rolePositions = positions.filter((p) => p.role_id === role.id);
             const candidates = people.filter((person) =>
@@ -216,6 +208,7 @@ export function PeopleTab({
                 serviceId={serviceId}
                 roleId={role.id}
                 roleName={role.name}
+                mascot={mascotFor(role.name, activeGroup?.group.name ?? "")}
                 positions={rolePositions}
                 candidates={candidates}
                 isScheduler={isScheduler}

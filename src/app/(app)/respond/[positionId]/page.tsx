@@ -9,6 +9,7 @@ import {
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { formatInOrgTime } from "@/lib/org-time";
+import { mascotFor } from "@/lib/mascots";
 import { RespondButtons } from "./respond-buttons";
 
 export default async function RespondPage({
@@ -54,25 +55,35 @@ export default async function RespondPage({
   if (!service || !role) return null;
 
   return (
-    <Card className="mx-auto max-w-md">
-      <CardHeader>
-        <CardTitle className="text-xl">
-          {role.name} — {service.title}
-        </CardTitle>
-        <CardDescription>
-          <span className="flex flex-col gap-1">
-            <span>{formatInOrgTime(service.starts_at, timezone, "EEEE, MMMM d, yyyy · h:mm a")}</span>
-            {service.campus ? (
-              <span className="flex items-center gap-1">
-                <MapPin className="size-3.5" /> {service.campus}
-              </span>
-            ) : null}
-          </span>
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <RespondButtons positionId={position.id} status={position.status} />
-      </CardContent>
-    </Card>
+    <div className="mx-auto grid max-w-md">
+      {/* Stands on the card's top edge, overlapping only its top padding */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={mascotFor(role.name)}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none relative z-10 -mb-3 h-36 w-auto justify-self-center drop-shadow-lg"
+      />
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">
+            {role.name} — {service.title}
+          </CardTitle>
+          <CardDescription>
+            <span className="flex flex-col gap-1">
+              <span>{formatInOrgTime(service.starts_at, timezone, "EEEE, MMMM d, yyyy · h:mm a")}</span>
+              {service.campus ? (
+                <span className="flex items-center gap-1">
+                  <MapPin className="size-3.5" /> {service.campus}
+                </span>
+              ) : null}
+            </span>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RespondButtons positionId={position.id} status={position.status} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

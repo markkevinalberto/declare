@@ -1,5 +1,6 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { MyScheduleView } from "./my-schedule-view";
 
 export default async function MySchedulePage() {
@@ -53,11 +54,14 @@ export default async function MySchedulePage() {
 
   return (
     <div className="grid max-w-xl gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">My Schedule</h1>
-        <p className="text-sm text-muted-foreground">
-          Your upcoming appointments — accept or decline below.
-        </p>
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">My Schedule</h1>
+          <p className="text-sm text-muted-foreground">
+            Your upcoming appointments — accept or decline below.
+          </p>
+        </div>
+        <PageMascot src="/mascot/checkmark.png" />
       </div>
       <MyScheduleView rows={rows} teamBlockouts={teamBlockouts} timezone={timezone} />
     </div>

@@ -128,6 +128,7 @@ export function RoleScheduleRow({
   serviceId,
   roleId,
   roleName,
+  mascot,
   positions,
   candidates,
   isScheduler,
@@ -138,6 +139,7 @@ export function RoleScheduleRow({
   serviceId: string;
   roleId: string;
   roleName: string;
+  mascot?: string;
   positions: PositionRow[];
   candidates: Person[];
   isScheduler: boolean;
@@ -196,7 +198,19 @@ export function RoleScheduleRow({
 
   return (
     <div className="grid gap-1.5">
-      <p className="text-sm font-medium">{roleName}</p>
+      <div className="flex items-end justify-between gap-3">
+        <p className="text-sm font-medium">{roleName}</p>
+        {/* Overlaps only the box's top padding, above the row's Resend / Remove buttons */}
+        {mascot ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={mascot}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none relative z-10 -mt-6 -mb-5 mr-4 hidden h-24 w-auto shrink-0 drop-shadow-md sm:block"
+          />
+        ) : null}
+      </div>
       <div className="overflow-hidden rounded-lg border bg-card">
         {positions.length === 0 && !isScheduler && !showSelfSignUp ? (
           <p className="px-3 py-2.5 text-sm text-muted-foreground">

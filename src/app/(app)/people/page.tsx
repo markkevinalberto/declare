@@ -1,5 +1,6 @@
 import { requireScheduler } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { PeopleTable } from "./people-table";
 import { InvitePersonDialog } from "./invite-person-dialog";
 import { PendingInvites } from "./pending-invites";
@@ -54,6 +55,7 @@ export default async function PeoplePage() {
             Everyone in your organization and the roles they hold.
           </p>
         </div>
+        <PageMascot src="/mascot/mm_duo_smile.png" />
         {isAdmin ? <InvitePersonDialog /> : null}
       </div>
 

@@ -1,5 +1,6 @@
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { SongDialog } from "./song-dialog";
 import { SongsView } from "./songs-view";
 
@@ -24,6 +25,7 @@ export default async function SongsPage() {
             details.
           </p>
         </div>
+        <PageMascot src="/mascot/mm_girl_tablet.png" />
         {isScheduler ? <SongDialog /> : null}
       </div>
 

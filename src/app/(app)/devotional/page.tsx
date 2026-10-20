@@ -45,13 +45,21 @@ export default async function DevotionalPage() {
 
   return (
     <div className="mx-auto grid max-w-2xl gap-4">
-      <div>
+      <div className="relative sm:pr-32">
         <h1 className="text-2xl font-semibold tracking-tight">Devotional</h1>
         <p className="text-sm text-muted-foreground">
           {lastLog
             ? `Sent ${format(parseISO(lastLog.sent_on), "EEEE, MMMM d")}.`
             : "Your church's weekly devotional shows up here."}
         </p>
+        {/* Sits on the card's top-right corner, above the decorative quote mark */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/mascot/prayer.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-4 -top-4 z-10 hidden h-32 w-auto drop-shadow-lg sm:block md:-top-6"
+        />
       </div>
 
       {!devotional || !lastLog ? (

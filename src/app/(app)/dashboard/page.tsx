@@ -72,7 +72,7 @@ export default async function DashboardPage() {
 
     return (
       <div className="grid gap-4">
-        <div className="relative overflow-visible pb-2">
+        <div className="relative pb-2 sm:pr-52">
           <h1 className="text-2xl font-semibold tracking-tight">
             Welcome, {profile.name || profile.email}
           </h1>
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
             src="/mascot/hero_thumbsup.png"
             alt=""
             aria-hidden="true"
-            className="pointer-events-none absolute -right-4 -top-10 h-56 w-auto object-contain hidden sm:block"
+            className="pointer-events-none absolute -right-4 -top-4 z-10 hidden h-52 w-auto drop-shadow-lg sm:block md:-top-6"
           />
         </div>
 
@@ -177,7 +177,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="grid gap-4">
-      <div className="relative overflow-visible pb-2">
+      <div className="relative pb-2 sm:pr-52">
         <h1 className="text-2xl font-semibold tracking-tight">
           Welcome, {profile.name || profile.email}
         </h1>
@@ -187,7 +187,7 @@ export default async function DashboardPage() {
           src="/mascot/hero_thumbsup.png"
           alt=""
           aria-hidden="true"
-          className="pointer-events-none absolute -right-4 -top-10 h-56 w-auto object-contain hidden sm:block"
+          className="pointer-events-none absolute -right-4 -top-4 z-10 hidden h-52 w-auto drop-shadow-lg sm:block md:-top-6"
         />
       </div>
 

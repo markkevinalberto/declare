@@ -62,6 +62,28 @@ const FEATURES = ALL_FEATURES.filter((f) => !f.requires || FEATURE_FLAGS[f.requi
 export function LandingPage() {
   return (
     <div className="min-h-svh overflow-x-hidden bg-background">
+      <style>{`
+        @keyframes mascot-float {
+          0%, 100% { transform: translateY(0px) rotate(-1.5deg); }
+          50%       { transform: translateY(-16px) rotate(1.5deg); }
+        }
+        @keyframes mascot-entrance {
+          0%   { transform: translateY(40px) rotate(-1.5deg); opacity: 0; filter: blur(6px); }
+          100% { transform: translateY(0px)  rotate(-1.5deg); opacity: 1; filter: blur(0);  }
+        }
+        .mascot-float {
+          animation:
+            mascot-entrance 0.9s cubic-bezier(0.32, 0.72, 0, 1) 0.3s both,
+            mascot-float    5s  cubic-bezier(0.45, 0, 0.55, 1)   1.2s infinite;
+        }
+        @keyframes mascot-wave {
+          0%, 100% { transform: translateY(0px) rotate(1deg); }
+          50%       { transform: translateY(-10px) rotate(-1deg); }
+        }
+        .mascot-wave {
+          animation: mascot-wave 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+        }
+      `}</style>
       <div className="sticky top-4 z-50 mx-auto flex max-w-fit items-center gap-1 rounded-full border bg-card/80 px-2 py-1.5 shadow-lg shadow-foreground/5 backdrop-blur-md">
         <Link href="/" className="flex items-center gap-2 pr-2 pl-1.5">
           <span className="flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-chart-2">
@@ -86,7 +108,7 @@ export function LandingPage() {
       </div>
 
       <main>
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pt-20 pb-8 sm:pt-24 lg:grid-cols-2 lg:gap-8">
+        <section className="relative mx-auto grid max-w-6xl items-center gap-12 overflow-visible px-6 pt-20 pb-8 sm:pt-24 lg:grid-cols-2 lg:gap-8">
           <div>
             <h1 className="max-w-3xl font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
               Run your church{" "}
@@ -113,10 +135,20 @@ export function LandingPage() {
             </div>
           </div>
 
-          <LandingHeroVisual
-            src="/marketing/dashboard.png"
-            alt="The Declare dashboard, showing upcoming services, unfilled positions, and pending volunteer responses"
-          />
+          <div className="relative">
+            <LandingHeroVisual
+              src="/marketing/dashboard.png"
+              alt="The Declare dashboard, showing upcoming services, unfilled positions, and pending volunteer responses"
+            />
+            {/* Mascot — floats over the bottom-left corner of the hero screenshot */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mascot/hero_thumbsup.png"
+              alt=""
+              aria-hidden="true"
+              className="mascot-float pointer-events-none absolute -bottom-10 -left-10 z-20 h-56 w-auto object-contain drop-shadow-xl sm:h-64 lg:h-72"
+            />
+          </div>
         </section>
 
         <div className="mt-16">
@@ -163,7 +195,16 @@ export function LandingPage() {
         ) : null}
 
         <section className="border-t bg-muted/30">
-          <div className="mx-auto flex max-w-5xl flex-col items-start gap-6 px-6 py-20 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative mx-auto flex max-w-5xl flex-col items-start gap-6 px-6 py-20 sm:flex-row sm:items-center sm:justify-between">
+            {/* Stands on the section's top edge directly above the CTA button —
+                its bottom stops at the row's top padding so it never covers it */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mascot/waving.png"
+              alt=""
+              aria-hidden="true"
+              className="mascot-wave pointer-events-none absolute -top-20 right-8 z-10 hidden h-40 w-auto drop-shadow-xl lg:block"
+            />
             <div>
               <h2 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
                 Ready to run your next service with Declare?

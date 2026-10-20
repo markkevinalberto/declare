@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { requireOrgProfile } from "@/lib/auth/current-user";
 import { createClient } from "@/lib/supabase/server";
+import { PageMascot } from "@/components/shared/page-mascot";
 import { PreferenceToggles } from "./preference-toggles";
 
 const CATEGORIES = [
@@ -33,12 +34,15 @@ export default async function NotificationPreferencesPage() {
 
   return (
     <div className="grid max-w-lg gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Notification preferences</h1>
-        <p className="text-sm text-muted-foreground">
-          Choose which events send you an email. In-app notifications (the bell
-          icon) always show everything.
-        </p>
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Notification preferences</h1>
+          <p className="text-sm text-muted-foreground">
+            Choose which events send you an email. In-app notifications (the bell
+            icon) always show everything.
+          </p>
+        </div>
+        <PageMascot src="/mascot/mm_headset2.png" />
       </div>
       <Card>
         <CardHeader>
