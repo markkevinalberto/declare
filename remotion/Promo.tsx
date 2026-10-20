@@ -29,7 +29,7 @@ function Hook() {
         <Rise text="Is every role filled?" size={132} gradient delay={22} />
       </AbsoluteFill>
       <div style={{ position: "absolute", right: 150, bottom: 110 }}>
-        <Mascot src="idea" height={430} delay={34} />
+        <Mascot src="full/girl_idea" height={430} delay={34} />
       </div>
     </AbsoluteFill>
   );
@@ -98,8 +98,8 @@ function Reveal() {
         </div>
         <Sub text="Volunteer scheduling for church teams" delay={24} size={46} />
       </AbsoluteFill>
-      <div style={{ position: "absolute", right: 40, bottom: -10 }}>
-        <Mascot src="hero_thumbsup" height={420} delay={30} />
+      <div style={{ position: "absolute", right: 70, bottom: 70 }}>
+        <Mascot src="full/duo_laptop" height={340} delay={30} />
       </div>
     </AbsoluteFill>
   );
@@ -291,7 +291,7 @@ function Blockouts() {
               </div>
             </div>
             <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 18, background: "white", borderRadius: 20, padding: "18px 24px", border: `2px solid ${C.border}`, opacity: flag, transform: `translateY(${(1 - flag) * 24}px)` }}>
-              <Mascot src="mm_cables2" height={90} delay={62} float={false} />
+              <Mascot src="full/boy_running" height={90} delay={62} float={false} />
               <div>
                 <div style={{ fontSize: 24, fontWeight: 600, color: C.ink }}>Grace Lim · Slides &amp; Lyrics</div>
                 <div style={{ fontSize: 18, color: C.muted }}>Away Sunday, Oct 25</div>
@@ -367,8 +367,8 @@ function Staffed() {
           </span>
         </div>
       </AbsoluteFill>
-      <div style={{ position: "absolute", right: 90, top: 40 }}>
-        <Mascot src="cheer" height={240} delay={flipAt(CREW.length - 1) + 10} />
+      <div style={{ position: "absolute", right: 30, top: 28 }}>
+        <Mascot src="full/duo_hug" height={190} delay={flipAt(CREW.length - 1) + 10} />
       </div>
     </AbsoluteFill>
   );
@@ -392,10 +392,10 @@ export function CallToAction({ headline = "Run your church without the spreadshe
         </div>
       </AbsoluteFill>
       <div style={{ position: "absolute", left: 70, bottom: 30 }}>
-        <Mascot src="hero_thumbsup" height={420} delay={18} />
+        <Mascot src="full/boy_thumbs_tablet" height={420} delay={18} />
       </div>
       <div style={{ position: "absolute", right: 90, bottom: 60 }}>
-        <Mascot src="waving" height={330} delay={26} />
+        <Mascot src="full/girl_tablet_wave" height={330} delay={26} />
       </div>
     </AbsoluteFill>
   );

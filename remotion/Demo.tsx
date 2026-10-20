@@ -35,7 +35,7 @@ function Intro() {
         <Sub text="Product tour — how your team runs Sunday" delay={18} size={44} />
       </AbsoluteFill>
       <div style={{ position: "absolute", right: 140, bottom: 70 }}>
-        <Mascot src="waving" height={360} delay={22} />
+        <Mascot src="full/girl_tablet_wave" height={360} delay={22} />
       </div>
     </AbsoluteFill>
   );
@@ -75,7 +75,7 @@ function Dashboard() {
         </BrowserShot>
       </div>
       <div style={{ position: "absolute", right: 60, bottom: 30 }}>
-        <Mascot src="idea" height={240} delay={20} />
+        <Mascot src="full/boy_thumbs_tablet" height={240} delay={20} />
       </div>
     </AbsoluteFill>
   );
@@ -113,7 +113,7 @@ function Plan() {
         </BrowserShot>
       </div>
       <div style={{ position: "absolute", right: 60, bottom: 30 }}>
-        <Mascot src="clipboard" height={240} delay={20} />
+        <Mascot src="full/duo_laptop" height={220} delay={20} />
       </div>
     </AbsoluteFill>
   );
@@ -239,7 +239,7 @@ function People() {
         </BrowserShot>
       </div>
       <div style={{ position: "absolute", right: 50, bottom: 30 }}>
-        <Mascot src="mm_duo_smile" height={230} delay={20} />
+        <Mascot src="full/duo_thumbs_peace" height={230} delay={20} />
       </div>
     </AbsoluteFill>
   );
@@ -262,7 +262,7 @@ function Care() {
       <AbsoluteFill style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 60, paddingTop: 210, fontFamily: body }}>
         <div style={{ position: "relative", width: 720, opacity: card, transform: `translateY(${(1 - card) * 30}px)` }}>
           <div style={{ position: "absolute", right: 10, top: -150, zIndex: 2 }}>
-            <Mascot src="prayer" height={200} delay={16} />
+            <Mascot src="full/duo_hug" height={200} delay={16} />
           </div>
           <div style={{ borderRadius: 26, padding: "44px 40px", background: GRADIENT, color: "#0f172a", boxShadow: "0 30px 60px rgba(36,91,255,0.25)" }}>
             <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 2, opacity: 0.7 }}>ROMANS 12:6-8</div>
@@ -275,7 +275,7 @@ function Care() {
         </div>
         <div style={{ width: 640, padding: 28, borderRadius: 26, background: "white", border: `2px solid ${C.border}`, boxShadow: "0 30px 60px rgba(15,23,42,0.1)", opacity: card }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
-            <Mascot src="heart" height={70} delay={20} float={false} />
+            <Mascot src="full/boy_headset_walkie" height={84} delay={20} float={false} />
             <div style={{ fontFamily: heading, fontSize: 30, fontWeight: 700, color: C.ink }}>Media Team chat</div>
           </div>
           <div style={{ display: "grid", gap: 14 }}>
