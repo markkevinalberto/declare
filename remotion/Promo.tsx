@@ -11,6 +11,7 @@ import {
   Chip,
   Confetti,
   Cursor,
+  duckedMusic,
   Logo,
   MailIcon,
   Mascot,
@@ -29,7 +30,7 @@ import { C, GRADIENT, body, heading } from "./theme";
 const T = 15; // transition length (frames)
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 // Each scene = 6f lead-in + its voice-over line + the transition overlap + a breath
-export const PROMO_SCENES = [141, 194, 155, 191, 249, 191, 172, 179, 213, 191, 160, 187];
+export const PROMO_SCENES = [141, 194, 155, 191, 249, 191, 172, 158, 213, 191, 160, 187];
 export const PROMO_DURATION = PROMO_SCENES.reduce((a, b) => a + b, 0) - T * (PROMO_SCENES.length - 1);
 
 /** Left-hand headline + supporting line used by the feature scenes. */
@@ -42,7 +43,7 @@ function SceneText({ title, sub, size = 96 }: { title: string; sub: string; size
   );
 }
 
-function Pop({ at, children, from = 0.6, style }: { at: number; children: ReactNode; from?: number; style?: CSSProperties }) {
+export function Pop({ at, children, from = 0.6, style }: { at: number; children: ReactNode; from?: number; style?: CSSProperties }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const s = spring({ frame: frame - at, fps, config: { damping: 12, stiffness: 160 } });
@@ -531,15 +532,14 @@ function Invite() {
   return (
     <AbsoluteFill>
       <Backdrop variant="pastel" />
-      <SceneText title="Invites by email & text" sub="Volunteers get the invite on their phone and accept with a single tap." size={92} />
+      <SceneText title="Invites by email" sub="Volunteers get the invite on their phone and accept with a single tap." size={92} />
       <FlyingIcon at={18} from={[300, 820]} to={[1370, 230]} tone={PASTEL.sky}><MailIcon size={46} color={C.primary} /></FlyingIcon>
-      <FlyingIcon at={30} from={[440, 840]} to={[1370, 230]} tone={PASTEL.blush}><TextIcon size={46} color={PASTEL.pop} /></FlyingIcon>
       <div style={{ position: "absolute", left: 1170, top: 130 }}>
-        <RespondScreen tapAt={128} notifAt={46} />
+        <RespondScreen tapAt={112} notifAt={40} />
       </div>
-      <Confetti at={130} x={1370} y={560} count={45} spread={0.7} />
+      <Confetti at={114} x={1370} y={560} count={45} spread={0.7} />
       <div style={{ position: "absolute", right: 60, bottom: 50 }}>
-        <Mascot src="full/boy_thumbs_tablet" height={260} delay={134} />
+        <Mascot src="full/boy_thumbs_tablet" height={260} delay={118} />
       </div>
     </AbsoluteFill>
   );
@@ -552,7 +552,7 @@ const MILESTONES = [
   { label: "1 day before", day: "Sat", x: 1220, bell: true },
   { label: "Sunday", day: "Sun", x: 1660 },
 ];
-function Reminders() {
+export function Reminders({ header }: { header?: ReactNode }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const LINE_Y = 760;
@@ -561,10 +561,12 @@ function Reminders() {
   return (
     <AbsoluteFill>
       <Backdrop variant="pastel" />
-      <div style={{ position: "absolute", left: 130, top: 110, width: 1300 }}>
-        <Rise text="Friendly reminders, automatically" size={86} />
-        <Sub text="Anyone who hasn't replied gets a nudge by email and text: 3 days and 1 day before." delay={16} style={{ marginTop: 22, maxWidth: 1100 }} />
-      </div>
+      {header ?? (
+        <div style={{ position: "absolute", left: 130, top: 110, width: 1300 }}>
+          <Rise text="Friendly reminders, automatically" size={86} />
+          <Sub text="Anyone who hasn't replied gets a nudge by email and text: 3 days and 1 day before." delay={16} style={{ marginTop: 22, maxWidth: 1100 }} />
+        </div>
+      )}
       <div style={{ position: "absolute", left: MILESTONES[0].x, top: LINE_Y - 5, width: MILESTONES[3].x - MILESTONES[0].x, height: 10, borderRadius: 999, background: "#dde5ef" }} />
       <div style={{ position: "absolute", left: MILESTONES[0].x, top: LINE_Y - 5, width: progress - MILESTONES[0].x, height: 10, borderRadius: 999, background: GRADIENT }} />
       {MILESTONES.map((m, i) => {
@@ -734,7 +736,7 @@ function Staffed() {
 }
 
 /* 12 — Call to action */
-export function CallToAction({ headline = "Run your church without the spreadsheet." }: { headline?: string }) {
+export function CallToAction({ headline = "Run your church without the spreadsheet.", badges }: { headline?: string; badges?: string[] }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const btn = spring({ frame: frame - 30, fps, config: { damping: 12, stiffness: 160 } });
@@ -751,6 +753,17 @@ export function CallToAction({ headline = "Run your church without the spreadshe
           </span>
           <span style={{ fontFamily: body, fontWeight: 600, fontSize: 34, color: "white" }}>declare-cyan.vercel.app</span>
         </div>
+        {badges ? (
+          <div style={{ display: "flex", gap: 16 }}>
+            {badges.map((b, i) => (
+              <Pop key={b} at={48 + i * 8}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 24px", borderRadius: 999, background: "rgba(255,255,255,0.2)", border: "2px solid rgba(255,255,255,0.45)", color: "white", fontFamily: body, fontWeight: 600, fontSize: 26 }}>
+                  <Check size={22} /> {b}
+                </span>
+              </Pop>
+            ))}
+          </div>
+        ) : null}
       </AbsoluteFill>
       <Confetti at={34} x={960} y={700} count={60} spread={0.8} />
       <div style={{ position: "absolute", left: 70, bottom: 30 }}>
@@ -780,7 +793,7 @@ const SCENE_SFX: Hit[][] = [
     ...hits("pop", ASSIGN.map((a) => a.click + 22), 0.22),
   ],
   [["whoosh", 0, 0.18], ["click", 40, 0.5], ["pop", 76, 0.3], ["click", 112, 0.5], ["success", 114, 0.3]],
-  [["whoosh", 0, 0.18], ["whoosh", 18, 0.35], ["whoosh", 30, 0.35], ["ding", 46, 0.5], ["click", 128, 0.5], ["success", 130, 0.45], ["confetti", 130, 0.3]],
+  [["whoosh", 0, 0.18], ["whoosh", 18, 0.35], ["ding", 40, 0.5], ["click", 112, 0.5], ["success", 114, 0.45], ["confetti", 114, 0.3]],
   [["whoosh", 0, 0.18], ["bell", 78, 0.45], ["bell", 128, 0.45], ["success", 176, 0.45]],
   [["whoosh", 0, 0.2], ...hits("bloop", CHAT.map((m) => m.at + 16), 0.4), ["whoosh", 118, 0.25]],
   [...hits("pop", CREW.map((_, i) => 26 + i * 8), 0.22), ["confetti", 80, 0.5], ["success", 80, 0.4]],
@@ -788,19 +801,8 @@ const SCENE_SFX: Hit[][] = [
 ];
 
 // Background music ducks under each voice-over line and swells between them
-const STARTS = PROMO_SCENES.map((_, i) => PROMO_SCENES.slice(0, i).reduce((a, b) => a + b, 0) - T * i);
-const VO_FRAMES = [106, 159, 120, 156, 214, 156, 137, 144, 178, 156, 125, 152];
-function musicVolume(f: number) {
-  const LOUD = 0.32;
-  const DUCK = 0.13;
-  let v = LOUD;
-  STARTS.forEach((start, i) => {
-    const a = start + 6;
-    const b = a + VO_FRAMES[i];
-    v = Math.min(v, interpolate(f, [a - 8, a, b, b + 10], [LOUD, DUCK, DUCK, LOUD], clamp));
-  });
-  return v * interpolate(f, [PROMO_DURATION - 45, PROMO_DURATION], [1, 0], clamp);
-}
+const VO_FRAMES = [106, 159, 120, 156, 214, 156, 137, 123, 178, 156, 125, 152];
+const musicVolume = duckedMusic(PROMO_SCENES, VO_FRAMES, T);
 
 export function Promo() {
   const t = linearTiming({ durationInFrames: T });

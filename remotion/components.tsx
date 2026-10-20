@@ -16,6 +16,24 @@ export function Voice({ name, delay = 6 }: { name: string; delay?: number }) {
 /** Pastel set shared with the landing page (sky, butter, blush, mint, lilac, peach). */
 export const PASTEL = { sky: "#dcebff", butter: "#fff2c6", blush: "#ffe0ea", mint: "#d6f5e7", lilac: "#e9e1ff", peach: "#ffe6d5", pop: "#ff5c93", sun: "#ffc21a" };
 
+/**
+ * Volume curve for a music bed under a TransitionSeries: ducks under each scene's
+ * voice-over line (starting 6f into the scene), swells between lines, fades out at the end.
+ */
+export function duckedMusic(scenes: number[], voFrames: number[], transition: number, loud = 0.32, duck = 0.13) {
+  const starts = scenes.map((_, i) => scenes.slice(0, i).reduce((a, b) => a + b, 0) - transition * i);
+  const total = scenes.reduce((a, b) => a + b, 0) - transition * (scenes.length - 1);
+  return (f: number) => {
+    let v = loud;
+    starts.forEach((start, i) => {
+      const a = start + 6;
+      const b = a + voFrames[i];
+      v = Math.min(v, interpolate(f, [a - 8, a, b, b + 10], [loud, duck, duck, loud], clamp));
+    });
+    return v * interpolate(f, [total - 45, total], [1, 0], clamp);
+  };
+}
+
 export type SfxName = "pop" | "whoosh" | "click" | "ding" | "bell" | "success" | "confetti" | "bloop";
 
 /** One-shot sound effect (public/videos/sfx/<name>.mp3) starting at frame `at`. */
