@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { AbsoluteFill, Easing, Html5Audio, Img, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Easing, Html5Audio, Img, Sequence, interpolate, random, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { C, GRADIENT, body, heading } from "./theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
@@ -13,10 +13,47 @@ export function Voice({ name, delay = 6 }: { name: string; delay?: number }) {
   );
 }
 
+/** Pastel set shared with the landing page (sky, butter, blush, mint, lilac, peach). */
+export const PASTEL = { sky: "#dcebff", butter: "#fff2c6", blush: "#ffe0ea", mint: "#d6f5e7", lilac: "#e9e1ff", peach: "#ffe6d5", pop: "#ff5c93", sun: "#ffc21a" };
+
+export type SfxName = "pop" | "whoosh" | "click" | "ding" | "bell" | "success" | "confetti" | "bloop";
+
+/** One-shot sound effect (public/videos/sfx/<name>.mp3) starting at frame `at`. */
+export function Sfx({ name, at, volume = 0.4 }: { name: SfxName; at: number; volume?: number }) {
+  return (
+    <Sequence from={Math.max(0, at)} layout="none">
+      <Html5Audio src={staticFile(`videos/sfx/${name}.mp3`)} volume={volume} />
+    </Sequence>
+  );
+}
+
 /** Soft brand backdrop with slowly drifting colour blobs. */
-export function Backdrop({ variant = "light" }: { variant?: "light" | "dark" | "brand" }) {
+export function Backdrop({ variant = "light" }: { variant?: "light" | "dark" | "brand" | "pastel" }) {
   const frame = useCurrentFrame();
   const drift = (period: number, amp = 50) => Math.sin(frame / period) * amp;
+  if (variant === "pastel") {
+    const blob = (color: string, size: number, left: number, top: number, period: number) => (
+      <div
+        style={{
+          position: "absolute",
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          left: left + drift(period, 60),
+          top: top + drift(period * 1.3, 45),
+          background: `radial-gradient(circle, ${color}, transparent 66%)`,
+        }}
+      />
+    );
+    return (
+      <AbsoluteFill style={{ background: "#f7f9ff", overflow: "hidden" }}>
+        {blob(PASTEL.sky, 1200, 1050, -520, 47)}
+        {blob(PASTEL.blush, 1000, -420, 120, 53)}
+        {blob(PASTEL.butter, 950, 560, 520, 41)}
+        {blob(PASTEL.mint, 700, 1300, 520, 59)}
+      </AbsoluteFill>
+    );
+  }
   const base =
     variant === "dark"
       ? `linear-gradient(160deg, ${C.navy} 0%, ${C.navy2} 100%)`
@@ -430,6 +467,72 @@ export function Phone({ children, scale = 1 }: { children: ReactNode; scale?: nu
         {children}
       </div>
     </div>
+  );
+}
+
+/** Confetti burst from (x, y) at frame `at`; deterministic so every render matches. */
+export function Confetti({ at, x = 960, y = 540, count = 70, spread = 1 }: { at: number; x?: number; y?: number; count?: number; spread?: number }) {
+  const frame = useCurrentFrame();
+  const t = frame - at;
+  if (t < 0 || t > 90) return null;
+  const colors = [C.primary, C.cyan, PASTEL.pop, PASTEL.sun, "#22c55e", "#a78bfa"];
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none" }}>
+      {Array.from({ length: count }, (_, i) => {
+        const angle = random(`a${i}`) * Math.PI * 2;
+        const speed = (14 + random(`s${i}`) * 22) * spread;
+        const px = x + Math.cos(angle) * speed * t;
+        const py = y + Math.sin(angle) * speed * t * 0.75 + 0.55 * t * t;
+        const w = 10 + random(`w${i}`) * 12;
+        return (
+          <span
+            key={i}
+            style={{
+              position: "absolute",
+              left: px,
+              top: py,
+              width: w,
+              height: w * 0.45,
+              borderRadius: 3,
+              background: colors[i % colors.length],
+              opacity: interpolate(t, [0, 60, 90], [1, 1, 0], clamp),
+              transform: `rotate(${t * (8 + random(`r${i}`) * 14) + i * 37}deg)`,
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+}
+
+/** Bell icon that rings (swings) for ~20 frames from `ringAt`. */
+export function Bell({ size = 40, color = C.ink, ringAt }: { size?: number; color?: string; ringAt?: number }) {
+  const frame = useCurrentFrame();
+  const since = ringAt === undefined ? 999 : frame - ringAt;
+  const swing = since >= 0 && since < 24 ? Math.sin(since * 1.2) * 22 * (1 - since / 24) : 0;
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${swing}deg)`, transformOrigin: "50% 8%" }}>
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+    </svg>
+  );
+}
+
+export function MailIcon({ size = 40, color = C.ink }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-10 6L2 7" />
+    </svg>
+  );
+}
+
+export function TextIcon({ size = 40, color = C.ink }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d="M8 9h8M8 13h5" />
+    </svg>
   );
 }
 

@@ -4,7 +4,7 @@ import { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 
 const VIDEOS = {
-  promo: { label: "30-second promo", src: "/videos/declare-promo.mp4", poster: "/videos/declare-promo-poster.jpg" },
+  promo: { label: "1-minute promo", src: "/videos/declare-promo.mp4", poster: "/videos/declare-promo-poster.jpg" },
   demo: { label: "Full product tour", src: "/videos/declare-demo.mp4", poster: "/videos/declare-demo-poster.jpg" },
 } as const;
 

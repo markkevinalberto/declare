@@ -11,6 +11,9 @@ import { formatInOrgTime } from "@/lib/org-time";
 import { cn } from "@/lib/utils";
 import { ServiceRowActions } from "./service-row-actions";
 
+// Past services list only the most recent few; older ones sit behind "Show older"
+const PAST_LIMIT = 4;
+
 type Service = {
   id: string;
   title: string;
@@ -30,6 +33,7 @@ export function ServicesView({
 }) {
   const [view, setView] = useState<"list" | "calendar">("list");
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [showAllPast, setShowAllPast] = useState(false);
 
   const now = new Date();
   const upcoming = services.filter((s) => new Date(s.starts_at) >= now);
@@ -99,14 +103,21 @@ export function ServicesView({
       />
 
       {!selectedDay && past.length > 0 ? (
-        <ServiceList
-          title="Past"
-          tone="past"
-          services={past}
-          now={now}
-          isScheduler={isScheduler}
-          timezone={timezone}
-        />
+        <div className="grid gap-2">
+          <ServiceList
+            title="Past"
+            tone="past"
+            services={showAllPast ? past : past.slice(0, PAST_LIMIT)}
+            now={now}
+            isScheduler={isScheduler}
+            timezone={timezone}
+          />
+          {past.length > PAST_LIMIT ? (
+            <Button variant="ghost" size="sm" className="justify-self-start text-muted-foreground" onClick={() => setShowAllPast((v) => !v)}>
+              {showAllPast ? "Show fewer" : `Show ${past.length - PAST_LIMIT} older service${past.length - PAST_LIMIT === 1 ? "" : "s"}`}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );
