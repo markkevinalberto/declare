@@ -164,7 +164,7 @@ export function PeopleTab({
 
       <div className="grid gap-5 md:grid-cols-[230px_1fr]">
         <div className="grid content-start gap-1.5">
-          <p className="text-sm font-semibold">Teams</p>
+          <p className="pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Teams</p>
           {groupsWithData.map(({ group, counts }) => {
             const active = group.id === activeGroupId;
             return (
@@ -199,8 +199,8 @@ export function PeopleTab({
           ) : null}
         </div>
 
-        <div className="grid content-start gap-4">
-          <p className="text-sm font-semibold">Roles</p>
+        <div className="grid content-start gap-6">
+          <p className="-mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Roles</p>
           {activeGroup?.roles.map((role, i) => {
             const rolePositions = positions.filter((p) => p.role_id === role.id);
             const candidates = people.filter((person) =>

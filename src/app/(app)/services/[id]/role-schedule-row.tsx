@@ -27,6 +27,20 @@ const STATUS_LABEL: Record<PositionRow["status"], string> = {
   declined: "Declined",
 };
 
+function summarize(positions: PositionRow[]) {
+  if (positions.length === 0) return "No one scheduled yet";
+  const count = (s: PositionRow["status"]) => positions.filter((p) => p.status === s).length;
+  return [
+    [count("accepted"), "confirmed"],
+    [count("invited"), "awaiting reply"],
+    [count("declined"), "declined"],
+    [count("draft"), "not invited yet"],
+  ]
+    .filter(([n]) => n)
+    .map(([n, label]) => `${n} ${label}`)
+    .join(" · ");
+}
+
 function initials(name: string) {
   return name
     .split(" ")
@@ -196,20 +210,23 @@ export function RoleScheduleRow({
     });
   }
 
+  const summary = summarize(positions);
+
   return (
-    <div className="grid gap-1.5">
-      <div className="flex items-end justify-between gap-3">
-        <p className="text-sm font-medium">{roleName}</p>
-        {/* Overlaps only the box's top padding, above the row's Resend / Remove buttons */}
-        {mascot ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={mascot}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none relative z-10 -mt-6 -mb-5 mr-4 hidden h-24 w-auto shrink-0 drop-shadow-md sm:block"
-          />
-        ) : null}
+    // Sticker gets its own fixed rail on the left so every role name starts on the same edge
+    <div className={cn("grid gap-x-4 gap-y-2", mascot && "sm:grid-cols-[7rem_minmax(0,1fr)]")}>
+      {mascot ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={mascot}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none hidden size-28 object-contain object-top drop-shadow-md sm:row-span-2 sm:block"
+        />
+      ) : null}
+      <div className="flex min-w-0 flex-col gap-0.5 pt-1">
+        <p className="truncate text-base font-semibold tracking-tight">{roleName}</p>
+        <p className="text-xs text-muted-foreground">{summary}</p>
       </div>
       <div className="overflow-hidden rounded-lg border bg-card">
         {positions.length === 0 && !isScheduler && !showSelfSignUp ? (
